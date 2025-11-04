@@ -26,8 +26,8 @@ class WST(ETC):
         # ------ Telescope ---------
         self.name = 'WST'
         
-        self.tel = dict(effective_area_MOS=100.0,
-                        effective_area_IFS=100.0,
+        self.tel = dict(effective_area_MOS=93.57, # mean of median and weighted mean of the ICD document
+                        effective_area_IFS=92.03, # minimum of the ICD document
                         diameter=12.0, # primary diameter
                         desc='Cass design',
                         version='03/11/2025',
