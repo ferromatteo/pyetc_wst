@@ -235,7 +235,7 @@ class WST(ETC):
 # telescope IQ missing everywhere (used 0.3" constant)
 # Moffat Beta missing everywhere (used 2.5 constant)
 # Diameter missing everywhere (used 12m constant)
-# To update: the telescope effective areas, the telescope transmissions with full arrays
+# To update:
 # new names of UBVI channels for MOS-HR: U->B, B->Green, V->Yellow, I->Red
 # # # # # # # # # # # # # # #
                 
@@ -245,3 +245,4 @@ class WST(ETC):
                
         
         
+
