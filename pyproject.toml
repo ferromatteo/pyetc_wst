@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyetc_wst"
+version = "0.1.0"
+description = "Exposure Time Calculator for the Wide-Field Spectroscopic Telescope (WST)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Matteo Ferro", email = "matteo.ferro@inaf.it"},
+    {name = "Roland Bacon"}
+]
+keywords = ["astronomy", "spectroscopy", "exposure-time-calculator", "WST"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "matplotlib>=3.4.0",
+    "astropy>=5.0.0",
+    "mpdaf>=3.5.0",
+    "skycalc_ipy>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ferromatteo/pyetc_wst"
+Repository = "https://github.com/ferromatteo/pyetc_wst"
+Documentation = "https://github.com/ferromatteo/pyetc_wst#readme"
+Issues = "https://github.com/ferromatteo/pyetc_wst/issues"
+
+[tool.setuptools]
+packages = ["pyetc_wst"]
+
+[tool.setuptools.package-data]
+pyetc_wst = [
+    "data/**/*",
+    "Band_Filters/**/*.txt",
+    "ESO_original_spectra/**/*",
+]

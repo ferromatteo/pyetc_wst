@@ -1,0 +1,16 @@
+# Include important metadata files
+include README.md
+include LICENSE
+include requirements.txt
+
+# Include data files
+recursive-include pyetc_wst/data *
+recursive-include pyetc_wst/Band_Filters *.txt
+recursive-include pyetc_wst/ESO_original_spectra *
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
