@@ -33,7 +33,7 @@ C_cgs = constants.c.cgs.value
 H_cgs = constants.h.cgs.value
 
 # number of traces for every object and number of vertical pixels needed to fully extract each trace
-num_trace = 8
+num_trace = 7
 trace_pixel_width = 8
 
 # tolerance to check for wavelength range
@@ -2089,4 +2089,5 @@ def plot_noise_components(spec_dict):
 # Add the rounding of computed NDIT to the nearest integer in the time_from_source methods, this is done only in the best case now
 # Add a way to not compute again the snr_from_source from scratch when computing time_from_source, we have everything we need there (fractions, source counts, sky counts, etc.) > we can just add a flag to save everything in the res dictionaries
 # There could be problems when requesting a SNR at a wavelength near the edge of the spectrum, in case of rebinning this could lead to errors, we should add checks for that
+
 # # # # # # # # # # # # # # #
