@@ -32,8 +32,7 @@ filter_manager = FilterManager(phot_system)
 C_cgs = constants.c.cgs.value
 H_cgs = constants.h.cgs.value
 
-# number of traces for every object and number of vertical pixels needed to fully extract each trace
-num_trace = 7
+# number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR
 trace_pixel_width = 8
 
 # tolerance to check for wavelength range
@@ -67,7 +66,8 @@ __all__ = [
     'mask_line_region',
     'mask_spectra_in_dict',
     'convolve_and_center',
-    'plot_noise_components'
+    'plot_noise_components',
+    'simulate_counts'
 ]
 
 class ETC:
@@ -891,6 +891,25 @@ class ETC:
         res['spec']['noise']['frac_dark'] = frac_dark_square
         res['spec']['noise']['frac_ron'] = frac_ron_square
 
+        # Simulate 1D spectrum with noise in extraction aperture (obs['ima_coadd']**2)
+        simulated_data = []
+        for i in range(len(wave)):
+            # Per-pixel values
+            s_pix = source_ph_square.data[i] / (obs['ima_coadd']**2)
+            sky_pix = sky_ph_spaxel.data[i]
+            d_pix = dark
+            
+            sim_counts = simulate_counts(
+                npix=obs['ima_coadd']**2,
+                source=s_pix,
+                sky=sky_pix,
+                dark=d_pix,
+                RON=ins['ron']
+            )
+            simulated_data.append(sim_counts)
+        
+        res['spec']['simulated_counts'] = Spectrum(data=np.array(simulated_data), wave=spec.wave)
+
         # if spectral rebinning is requested
         if 'spbin' in obs and obs['spbin'] > 1:
             res['spec']['snr_rebin'] = self.rebin_spectrum(res['spec']['nph_source'], res['spec']['noise']['tot'], obs['spbin']) 
@@ -996,6 +1015,12 @@ class ETC:
         # 1/(num_trace * trace_pixel_width) of the total counts                                #
         # # # # # # # # # # # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         
+        # we get the slicing only for the moshr
+        if ins['name'] == 'moslr':
+            num_trace = 1
+        elif ins['name'] == 'moshr':
+            num_trace = 7
+
         dl = spec.wave.get_step(unit='Angstrom')
         a = (wave*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins.data * a
@@ -1077,6 +1102,25 @@ class ETC:
         res['spec']['noise']['frac_sky'] = frac_sky_aperture
         res['spec']['noise']['frac_dark'] = frac_dark_aperture
         res['spec']['noise']['frac_ron'] = frac_ron_aperture
+
+        # Simulate 1D spectrum with noise in extraction aperture (num_trace * trace_pixel_width)
+        simulated_data = []
+        for i in range(len(wave)):
+            # Per-pixel values
+            s_pix = source_ph_aperture.data[i] / (num_trace * trace_pixel_width)
+            sky_pix = sky_ph_aperture.data[i] / (num_trace * trace_pixel_width)
+            d_pix = dark / (num_trace * trace_pixel_width)
+            
+            sim_counts = simulate_counts(
+                npix=num_trace * trace_pixel_width,
+                source=s_pix,
+                sky=sky_pix,
+                dark=d_pix,
+                RON=ins['ron']
+            )
+            simulated_data.append(sim_counts)
+        
+        res['spec']['simulated_counts'] = Spectrum(data=np.array(simulated_data), wave=spec.wave)
 
         # if spectral rebinning is requested
         if 'spbin' in obs and obs['spbin'] > 1:
@@ -1510,6 +1554,12 @@ class ETC:
         Ksky = ins_ins.data * (np.pi * ins['aperture'] / 2)**2 * tel_eff_area * (dl/1e4)
 
         sky_ph_aperture = ins_sky * Ksky
+
+        # we get the slicing only for the moshr
+        if ins['name'] == 'moslr':
+            num_trace = 1
+        elif ins['name'] == 'moshr':
+            num_trace = 7
 
         dark = ins['dcurrent'] / 3600 * num_trace * trace_pixel_width
         ron = ins['ron']**2 * num_trace * trace_pixel_width
@@ -2081,6 +2131,50 @@ def plot_noise_components(spec_dict):
     plt.tight_layout()
     plt.show()
 
+import numpy as np
+
+# function to simulate the 1d spectra including noise components
+def simulate_counts(npix, source=None, sky=None, dark=None, RON=None, seed=None):
+    """
+    Simulate the total observed counts within a number of pixels,
+    assuming uniform per-pixel values for source, sky, and dark current.
+
+    Parameters
+    ----------
+    npix : int
+        number of pixels.
+    source : float
+        Mean source counts per pixel.
+    sky : float
+        Mean sky counts per pixel.
+    dark : float
+        Mean dark current counts per pixel.
+    RON : float
+        Read-Out Noise (standard deviation of Gaussian noise per pixel).
+    seed : int or None, optional
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    total_counts : float
+        Total observed counts in the NxN region (including noise).
+    """
+    rng = np.random.default_rng(seed)
+
+    # Mean signal per pixel
+    mean_signal = source + sky + dark
+
+    # Photon and dark noise (Poisson distributed)
+    poisson_counts = rng.poisson(mean_signal, size=npix)
+
+    # Add read-out noise (Gaussian distributed)
+    noisy_counts = poisson_counts + rng.normal(0, RON, size=npix)
+
+    # Totals
+    total_counts = noisy_counts.sum()
+
+    return total_counts
+
 # # # # # # # # # # # # # # # #
 
 
@@ -2089,5 +2183,4 @@ def plot_noise_components(spec_dict):
 # Add the rounding of computed NDIT to the nearest integer in the time_from_source methods, this is done only in the best case now
 # Add a way to not compute again the snr_from_source from scratch when computing time_from_source, we have everything we need there (fractions, source counts, sky counts, etc.) > we can just add a flag to save everything in the res dictionaries
 # There could be problems when requesting a SNR at a wavelength near the edge of the spectrum, in case of rebinning this could lead to errors, we should add checks for that
-
 # # # # # # # # # # # # # # #
