@@ -17,11 +17,11 @@ class PhotometricSystem:
         # From https://www.astronomy.ohio-state.edu/martini.10/usefuldata.html
         # 2025-09-26: GAIA filters added from here: https://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=GAIA/GAIA3.Gbp&&mode=browse&gname=GAIA&gname2=GAIA3#filter
         self.filters_vega = ["U", "B", "V", "R", "I", "J", "H", "K", "GbpGAIA", "GGAIA", "GrpGAIA", "GrvsGAIA"]
+        # Last four values: check Jordi et al. 2010, A&A, 523, A48, assuming Gbp-G ~ 0.16 and Grp-G ~ -0.13 for a G2V star (Vega-like)
         self.ab_vega_diff_vf = [0.79, -0.09, 0.02, 0.21, 0.45, 0.91, 1.39, 1.85, 0.08, 0.00, 0.13, 0.00]
         
         # Should be properly computed, since for now we are using the conversion from https://www.astronomy.ohio-state.edu/martini.10/usefuldata.html
         self.filters_AB = ["uSDSS", "gSDSS", "rSDSS", "iSDSS", "zSDSS", "uLSST", "gLSST", "rLSST", "iLSST", "zLSST"]
-        # Last four values: check Jordi et al. 2010, A&A, 523, A48, assuming Gbp-G ~ 0.16 and Grp-G ~ -0.13 for a G2V star (Vega-like)
         self.ab_vega_diff_abf = [0.91, -0.08, 0.16, 0.37, 0.54, 0.91, -0.08, 0.16, 0.37, 0.54] 
         
         # Zero points for Vega from 
