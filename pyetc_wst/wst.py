@@ -84,7 +84,7 @@ class WST(ETC):
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
                                 version = '15/10/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.208, # spaxel size in arcsec
@@ -104,7 +104,7 @@ class WST(ETC):
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
                                 version = '15/10/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.208, # spaxel size in arcsec
@@ -125,7 +125,7 @@ class WST(ETC):
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
                                 version = '15/10/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.208, # spaxel size in arcsec
@@ -149,7 +149,7 @@ class WST(ETC):
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed B channel',  
                                 version = '02/11/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
@@ -169,7 +169,7 @@ class WST(ETC):
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Green channel',  
                                 version = '02/11/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
@@ -189,7 +189,7 @@ class WST(ETC):
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Yellow channel',  
                                 version = '02/11/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
@@ -209,7 +209,7 @@ class WST(ETC):
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Red channel',  
                                 version = '02/11/2025',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.30, # fwhm PSF of telescope **
+                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
                                 iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.2067, # spaxel size in arcsec
@@ -232,7 +232,7 @@ class WST(ETC):
 
 # # # # # # # MORE # # # # # #
 # MOS-HR missing the iq instrument (used 0.3" constant), MOS-LR IQ not clear (used 0.3" constant)
-# telescope IQ missing everywhere (used 0.3" constant)
+# telescope IQ missing for IFS (used 0.3" constant), for MOS-LR and MOS-HR (used 0.1875" constant, from fig. 15 z=30deg, at 74% area)
 # Moffat Beta missing everywhere (used 2.5 constant)
 # Diameter missing everywhere (used 12m constant)
 # To update:
@@ -245,4 +245,3 @@ class WST(ETC):
                
         
         
-
