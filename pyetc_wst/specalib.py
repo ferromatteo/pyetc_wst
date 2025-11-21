@@ -15,10 +15,10 @@ class PhotometricSystem:
         self.MAG_SYSTEMS = ["Vega", "AB"]
         
         # From https://www.astronomy.ohio-state.edu/martini.10/usefuldata.html
-        # 2025-09-26: GAIA filters added from here: https://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=GAIA/GAIA3.Gbp&&mode=browse&gname=GAIA&gname2=GAIA3#filter
+        # 2025-09-26: GAIA filters added from Riello+ 2021, A&A, 649, A3 (Gaia EDR3), for the las one we don't have the reference yet
         self.filters_vega = ["U", "B", "V", "R", "I", "J", "H", "K", "GbpGAIA", "GGAIA", "GrpGAIA", "GrvsGAIA"]
         # Last four values: check Jordi et al. 2010, A&A, 523, A48, assuming Gbp-G ~ 0.16 and Grp-G ~ -0.13 for a G2V star (Vega-like)
-        self.ab_vega_diff_vf = [0.79, -0.09, 0.02, 0.21, 0.45, 0.91, 1.39, 1.85, 0.08, 0.00, 0.13, 0.00]
+        self.ab_vega_diff_vf = [0.79, -0.09, 0.02, 0.21, 0.45, 0.91, 1.39, 1.85, 0.0154, 0.1137, 0.3561, 0.00]
         
         # Should be properly computed, since for now we are using the conversion from https://www.astronomy.ohio-state.edu/martini.10/usefuldata.html
         self.filters_AB = ["uSDSS", "gSDSS", "rSDSS", "iSDSS", "zSDSS", "uLSST", "gLSST", "rLSST", "iLSST", "zLSST"]
@@ -26,6 +26,7 @@ class PhotometricSystem:
         
         # Zero points for Vega from 
         # https://www.eso.org/observing/etc/doc/skycalc/helpskycalc.html#mags
+        # Gaia filters from Riello+ 2021, A&A, 649, A3 (Gaia EDR3), with their pivot wave, last one unchaged
         # BP: [0: ll in A, 1: Fv in [erg/cm^2/s/Hz], 2: Fll in [erg/cm^2/s/A], 3: PHll in [Photons/cm^2/s/A]]
         self.VEGA_flux_zeropoints = {
             "U": [3600., None, 4.18023e-9, 757.5], 
@@ -36,12 +37,12 @@ class PhotometricSystem:
             "J": [12200., None, 3.12e-10, 191.6],
             "H": [16300., None, 1.14e-10, 93.5],
             "K": [21900., None, 3.94e-11, 43.4],
-            "GbpGAIA": [5035.75, None, 4.07852e-9, None],
-            "GGAIA": [5822.39, None, 2.50386e-9, None],
-            "GrpGAIA": [7619.96, None, 1.26902e-9, None],
+            "GbpGAIA": [5109.7, None, 4.01188e-9, None],
+            "GGAIA": [6217.9, None, 2.40375e-9, None],
+            "GrpGAIA": [7769.1, None, 1.58489e-9, None],
             "GrvsGAIA": [8578.16, None, 9.03937e-10, None]
         }
-        
+
         # Zero points for AB from 
         # http://svo2.cab.inta-csic.es/theory/fps/index.php?id=SLOAN & id=LSST
         # BP: [0: ll in A, 1: Fv in [erg/cm^2/s/Hz], 2: Fll in [erg/cm^2/s/A], 3: PHll in [Photons/cm^2/s/A]]
