@@ -155,13 +155,13 @@ class ETC:
         conf = insfam[fo["CH"]]
 
         # first check on value of the SED type
-        if fo['Obj_SED'] not in ('template', 'pl', 'bb', 'line'):
-            raise ValueError(f"Invalid SED type: {fo['Obj_SED']} \n Allowed values are 'template', 'pl', 'bb', 'line'")
+        if fo['Obj_SED'] not in ('template', 'pl', 'bb', 'line', 'uniform'):
+            raise ValueError(f"Invalid SED type: {fo['Obj_SED']} \n Allowed values are 'template', 'pl', 'bb', 'line', 'uniform'")
         
         # Determine spectral type
         if fo['Obj_SED'] == 'line':
             dummy_type = 'line'
-        elif fo['Obj_SED'] in ('template', 'pl', 'bb'):
+        elif fo['Obj_SED'] in ('template', 'pl', 'bb', 'uniform'):
             dummy_type = 'cont'
 
         # check coadding for IFS, should be odd integer
@@ -411,6 +411,22 @@ class ETC:
                 syst = obs['syst']
 
                 flux = sed_models.powerlaw(def_wave, indpl)
+                mag, syst = phot_system.auto_conversion(mag, band, syst)
+                _, _, K = filter_manager.apply_filter(def_wave, flux, band, mag, syst)
+
+            elif obs['spec_specific'] == 'uniform':
+                def_wave = np.linspace(100, 30000, 10000)
+
+                # Redshift correction
+                redshift = obs['redshift']
+                def_wave *= (1 + redshift)
+
+                band = obs['band']
+                mag = obs['mag']
+                syst = obs['syst']
+
+                # Uniform spectrum = powerlaw with index 0
+                flux = sed_models.powerlaw(def_wave, 0.0)
                 mag, syst = phot_system.auto_conversion(mag, band, syst)
                 _, _, K = filter_manager.apply_filter(def_wave, flux, band, mag, syst)
 
