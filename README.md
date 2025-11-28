@@ -69,9 +69,8 @@ res_snr = wst.snr_from_source(con, im, spe)
 # for time/exposures/best combination
 res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best')
 ```
-
-A full_obs dictionary should look like this:
-```
+A full_obs dictionary should look like this (detailed information are given in the file encoding.txt:
+```python
 full_obs = {
     "INS": "moslr",
     "CH": "red",
@@ -121,14 +120,35 @@ full_obs = {
     "COADD_XY": 1
 }
 ```
-
-After the computation results can be plotted easily accessing the mpdaf `Spectrum` objects in the results dictionaries like this:
-```
+After the computation results can be plotted easily accessing the mpdaf `Spectrum` objects in the results dictionary like this:
+```python
 res_snr['spec']['snr'].plot()
 ```
 or
-```
+```python
 res_snr['spec']['nph_source'].plot()
+```
+
+In general the results of the snr computation `res_snr` will have a main dictionary res_snr['spec'] which contains several sub-dictionaries, all related to the 
+integration in the aperture area for the MOS, and the requested `COADD_XY x COADD_XY` for the IFS (which has also another dictionary res_snr['peak']) for the central pixel value.
+
+These sub-dictionaries include:
+- 'nph_source': photon from source
+- 'nph_sky': photon from sky
+- 'snr': snr in the aperture/integration area
+- 'snr_rebin': snr in the aperture/integration area, rebinned with COADD_WL
+- 'simulated_counts': 1D extracted raw spectrum
+- 'noise': another dictionary with noise components and their fractions
+  - 'tot'
+  - 'frac_source'
+  - 'frac_sky'
+  - 'frac_dark' 
+  - 'frac_ron'
+
+Lastly, there is a handy function to plot all the noise components togheter, and will accept `res_snr['spec']['noise']` (and also `res_snr['peak']['noise']`) for IFS): 
+
+```python
+plot_noise_components(res_snr['spec']['noise'])
 ```
 
 ## Usage Examples
