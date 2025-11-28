@@ -56,7 +56,7 @@ ifs_blue = wst.ifs['blue']
 moslr_red = wst.moslr['red']
 moshr_u = wst.moshr['U']
 
-# Build the full dctionaries needed for computation (full_obs), which will include observing conditions, source properties, computation requests, and instrument configuration
+# Build the full dictionaries needed for computation (full_obs), which will include observing conditions, source properties, computation requests, and instrument configuration
 full_obs = {...}
 con, ob, spe, im, spe_input = wst.build_obs_full(full_obs)
 
