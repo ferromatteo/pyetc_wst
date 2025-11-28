@@ -1,0 +1,122 @@
+# # # LIST OF PARAMETERS FOR THE full_obs DICTIONARY, and the related ranges/possible values
+
+"INS" (str):
+- "moslr"
+- "moshr"
+- "ifs"
+
+"CH" (str): 
+- for "moslr": "Blue", "Green" or "Red"
+- for "moshr": "U", "B", "V" or "I"
+- for "ifs": "Blue" or "Red"
+
+"NDIT" (float/int, positive) - NUMBER OF EXPOSURES
+
+"DIT" (float/int, positive) - TIME IN SECONDS OF ONE EXPOSURE
+
+"SNR" (float/int, positive) - SNR, AT A SPECIFIC WAVE
+
+"Lam_Ref" (float/int, positive) - REFERENCE WAVE WHEN SNR IS GIVEN
+
+Needed only for moshr/moslr    
+"OBJ_FIB_DISP": float/int (in the web page is in [0,0.3]) - OBJECT FIBER DISPLACEMENT, IN ARCSEC
+    
+"SEE" (float/int, positive) - SEEING
+     
+"SKYCALC" (bool)
+
+"MOON" (str): "darksky", "greysky", "brightsky" (used only with SKYCALC=False)
+
+"AM": - AIRMASS
+with SKYCALC=False float in [1.0, 1.2, 1.5, 2.0]
+
+with SKYCALC=True  float/int
+
+
+The following TWO used only with SKYCALC=True
+"PWV": float/int (will be rounded to the nearest number to [0.05, 0.1, 0.25, 0.5, 1.0, 1.5, 2.5, 3.5, 5.0, 7.5, 10.0, 20.0]) - PRECIPITABLE WATER VAPOR
+"FLI": float/int, should be in [0, 1] - FRACTIONAL OF THE MOON ILLUMINATED
+
+"Obj_SED":
+- "template"
+- "pl" - POWERLAW
+- "bb" - BLACKBODY
+- "line"
+- "uniform" - constant with wave
+
+"SED_Name" (used only with "Obj_SED" is "template"), possible values:
+(['MARCS_3400K_lg+40', 'MARCS_3300K_lg+40', 'MARCS_8000K_lg+35', 'Pickles_O5V', 'Kinney_starb5', 'Kinney_starb4', 'Kinney_sa', 'MARCS_3300K_lg+55', 'MARCS_3800K_lg+35', 'MARCS_3400K_lg+55', 'MARCS_7500K_lg+45', 'MARCS_5750K_lg+50', 'MARCS_4500K_lg+40', 'MARCS_3500K_lg+50', 'MARCS_6000K_lg+50', 'Kinney_starb6', 'MARCS_7250K_lg+40', 'Pickles_O9V', 'MARCS_3900K_lg+30', 'MARCS_4250K_lg+45', 'MARCS_3200K_lg+50', 'MARCS_5000K_lg+40', 'MARCS_3200K_lg+45', 'MARCS_4250K_lg+50', 'Kinney_sb', 'MARCS_3500K_lg+45', 'MARCS_6000K_lg+45', 'MARCS_5750K_lg+45', 'MARCS_6750K_lg+40', 'MARCS_7500K_lg+50', 'MARCS_7500K_lg+40', 'Galev_E', 'MARCS_6750K_lg+50', 'Pickles_B2IV', 'MARCS_4500K_lg+45', 'MARCS_3500K_lg+55', 'Kinney_s0', 'Kinney_starb3', 'MARCS_7250K_lg+45', 'MARCS_3900K_lg+35', 'MARCS_4250K_lg+40', 'MARCS_5000K_lg+50', 'MARCS_5000K_lg+45', 'MARCS_3200K_lg+40', 'MARCS_7250K_lg+50', 'Kinney_starb2', 'Pickles_A0III', 'MARCS_3500K_lg+40', 'MARCS_6000K_lg+40', 'MARCS_4500K_lg+50', 'MARCS_5750K_lg+40', 'MARCS_6750K_lg+45', 'MARCS_3400K_lg+45', 'MARCS_3300K_lg+45', 'MARCS_8000K_lg+30', 'Kinney_starb1', 'MARCS_3800K_lg+30', 'MARCS_3300K_lg+50', 'MARCS_3400K_lg+50', 'MARCS_6750K_lg+35', 'MARCS_5750K_lg+30', 'MARCS_6000K_lg+30', 'MARCS_3500K_lg+30', 'Pickles_A0V', 'MARCS_3900K_lg+50', 'MARCS_3200K_lg+30', 'MARCS_5000K_lg+35', 'MARCS_4250K_lg+30', 'MARCS_3900K_lg+45', 'MARCS_7250K_lg+35', 'MARCS_4500K_lg+35', 'MARCS_7500K_lg+30', 'Pickles_K2V', 'MARCS_3800K_lg+40', 'Kurucz_B8V', 'MARCS_8000K_lg+40', 'MARCS_3300K_lg+35', 'MARCS_3800K_lg+55', 'MARCS_3400K_lg+35', 'MARCS_3800K_lg+45', 'Pickles_G0V', 'MARCS_8000K_lg+50', 'MARCS_8000K_lg+45', 'MARCS_3800K_lg+50', 'MARCS_3300K_lg+30', 'MARCS_3400K_lg+30', 'MARCS_6750K_lg+30', 'MARCS_5750K_lg+35', 'MARCS_6000K_lg+35', 'MARCS_3500K_lg+35', 'Pickles_M2V', 'MARCS_3200K_lg+35', 'MARCS_3900K_lg+55', 'MARCS_5000K_lg+30', 'MARCS_4250K_lg+35', 'MARCS_3900K_lg+40', 'MARCS_7250K_lg+30', 'MARCS_4500K_lg+30', 'MARCS_7500K_lg+35', 'Kurucz_G2V', 'MARCS_3600K_lg+30', 'MARCS_3100K_lg+30', 'Pickles_B9III', 'MARCS_3000K_lg+35', 'MARCS_6500K_lg+35', 'MARCS_5500K_lg+30', 'MARCS_3700K_lg+35', 'MARCS_6250K_lg+30', 'MARCS_5250K_lg+35', 'MARCS_4000K_lg+30', 'MARCS_7000K_lg+35', 'MARCS_4750K_lg+35', 'MARCS_7750K_lg+30', 'MARCS_3000K_lg+30', 'MARCS_6500K_lg+30', 'MARCS_5500K_lg+35', 'MARCS_3700K_lg+30', 'MARCS_6250K_lg+35', 'MARCS_5250K_lg+30', 'MARCS_4000K_lg+35', 'Kurucz_A1V', 'MARCS_7000K_lg+30', 'MARCS_4750K_lg+30', 'MARCS_7750K_lg+35', 'MARCS_3600K_lg+35', 'MARCS_3100K_lg+35', 'Pickles_B9V', 'MARCS_7750K_lg+45', 'MARCS_3000K_lg+55', 'MARCS_5500K_lg+50', 'MARCS_3700K_lg+55', 'MARCS_4750K_lg+40', 'MARCS_6250K_lg+50', 'MARCS_7000K_lg+40', 'MARCS_4000K_lg+45', 'MARCS_5250K_lg+40', 'MARCS_4000K_lg+50', 'MARCS_6250K_lg+45', 'MARCS_3700K_lg+40', 'MARCS_5500K_lg+45', 'MARCS_6500K_lg+40', 'MARCS_3000K_lg+40', 'MARCS_7750K_lg+50', 'MARCS_3100K_lg+45', 'MARCS_3600K_lg+45', 'MARCS_3600K_lg+50', 'MARCS_3100K_lg+50', 'Kurucz_B1V', 'MARCS_3100K_lg+40', 'Kurucz_F0V', 'MARCS_3600K_lg+40', 'MARCS_3600K_lg+55', 'MARCS_3100K_lg+55', 'Kinney_ell', 'Pickles_K7V', 'MARCS_7750K_lg+40', 'MARCS_6500K_lg+50', 'MARCS_3000K_lg+50', 'MARCS_4750K_lg+45', 'MARCS_3700K_lg+50', 'MARCS_7000K_lg+45', 'MARCS_4000K_lg+40', 'MARCS_5250K_lg+50', 'MARCS_5250K_lg+45', 'MARCS_7000K_lg+50', 'MARCS_6250K_lg+40', 'MARCS_3700K_lg+45', 'MARCS_4750K_lg+50', 'MARCS_5500K_lg+40', 'MARCS_6500K_lg+45', 'MARCS_3000K_lg+45', 'qso-interp'])
+
+to print them all in notebook/console: 
+
+from pyetc_wst.specalib import *
+sed_models = SEDModels()
+print(sed_models.eso_spectra_files.keys())
+
+"OBJ_MAG" (float/int) - MAGNITUDE VALUE
+
+"MAG_SYS" (str) 'Vega' or 'AB'
+
+"MAG_FIL" (str) in:
+['uSDSS',
+ 'gSDSS',
+ 'rSDSS',
+ 'iSDSS',
+ 'zSDSS',
+ 'uLSST',
+ 'gLSST',
+ 'rLSST',
+ 'iLSST',
+ 'zLSST']
+['U',
+ 'B',
+ 'V',
+ 'R',
+ 'I',
+ 'J',
+ 'H',
+ 'K',
+ 'GbpGAIA',
+ 'GGAIA',
+ 'GrpGAIA',
+ 'GrvsGAIA']
+
+to print them all in notebook/console: 
+
+from pyetc_wst.specalib import *
+phot_system = PhotometricSystem()
+print(phot_system.filters_AB)
+print(phot_system.filters_Vega)
+
+
+"Z" (float/int, positive) - REDSHIFT
+"BB_Temp" (float/int, positive, needed only for "Obj_SED" is "bb") - TEMPERATURE IN KELVIN
+"PL_Index" (float/int, needed only for "Obj_SED" is "pl") - INDEX OF THE POWERLAW
+
+following are used only when "Obj_SED" is "line"
+"SEL_FLUX" (float/int, positive, used instead of the magnitude) - FLUX OF THE LINE IN erg/cm^2/s/AA
+"SEL_CWAV" (float/int, positive) - WAVE OF THE LINE IN AA
+"SEL_FWHM" (float/int, positive) - FWHM OF THE LINE IN AA
+
+"Obj_Spat_Dis" (str):
+- "ps" - POINTSOURCE
+- "sb" - SURFACE BRIGHTNESS
+- "resolved"
+
+if "Obj_Spat_Dis" is "resolved":
+"IMA" (str) IMAGE GEOMETRY:
+- "moffat"
+- "sersic"
+
+if "moffat":
+"IMA_FWHM" (float/int, positive) - FWHM IN ARCSEC
+"IMA_BETA" (float/int, positive)
+
+if "sersic":
+"Sersic_Reff" (float/int, positive) - EFFECTIVE RADIUS IN ARCSEC
+"Sersic_Ind" (float/int, positive) - SERSIC INDEX
+
+"COADD_WL" (int, >=1) - NUMBER OF SPECTRAL PIXEL TO USE FOR THE REBINNING
+
+Needed only for ifs
+"COADD_XY" (int, should be odd, 1,3,5,7,...) - NUMBER OF square spaxels (1x1, 3x3, 5x5, 7x7, ...) for the integration > will update to accept all values...
