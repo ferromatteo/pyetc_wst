@@ -122,6 +122,15 @@ full_obs = {
 }
 ```
 
+After the computation results can be plotted easily accessing the mpdaf `Spectrum` objects in the results dictionaries like this:
+```
+res_snr['spec']['snr'].plot()
+```
+or
+```
+res_snr['spec']['nph_source'].plot()
+```
+
 ## Usage Examples
 
 update in future version
