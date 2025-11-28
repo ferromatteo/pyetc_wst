@@ -69,7 +69,7 @@ res_snr = wst.snr_from_source(con, im, spe)
 # for time/exposures/best combination
 res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best')
 ```
-A full_obs dictionary should look like this (detailed information are given in the file encoding.txt:
+A full_obs dictionary should look like this (detailed information are given in the file **encoding.txt**):
 ```python
 full_obs = {
     "INS": "moslr",
