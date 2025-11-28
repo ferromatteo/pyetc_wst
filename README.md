@@ -69,6 +69,9 @@ res_snr = wst.snr_from_source(con, im, spe)
 # for time/exposures/best combination
 res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best')
 ```
+
+**NOTE**: time_from_source() basically update the 'dit', 'ndit' or both values in the obs. dictionary to the value/values needed to reach a specific SNR at a specific wavelength, after it you could run a `res_snr = wst.snr_from_source(con, im, spe)` and plot the SNR to check the results
+
 A full_obs dictionary should look like this (detailed information are given in the file **encoding.txt**):
 ```python
 full_obs = {
@@ -145,7 +148,7 @@ These sub-dictionaries include:
   - 'frac_dark' 
   - 'frac_ron'
 
-Lastly, there is a handy function to plot all the noise components togheter, and will accept `res_snr['spec']['noise']` (and also `res_snr['peak']['noise']`) for IFS): 
+Lastly, there is a handy function to plot all the noise components together, and will accept `res_snr['spec']['noise']` (and also `res_snr['peak']['noise']`) for IFS): 
 
 ```python
 plot_noise_components(res_snr['spec']['noise'])
