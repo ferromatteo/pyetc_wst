@@ -70,7 +70,7 @@ res_snr = wst.snr_from_source(con, im, spe)
 res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best')
 ```
 
-**NOTE**: time_from_source() basically update the 'dit', 'ndit' or both values in the obs. dictionary to the value/values needed to reach a specific SNR at a specific wavelength, after it you could run a `res_snr = wst.snr_from_source(con, im, spe)` and plot the SNR to check the results
+**NOTE**: *`time_from_source()` basically update the 'dit', 'ndit' or both values in the obs. dictionary to the value/values needed to reach a specific SNR at a specific wavelength, after it you could run a `res_snr = wst.snr_from_source(con, im, spe)` and plot the SNR to check the results.*
 
 A full_obs dictionary should look like this (detailed information are given in the file **encoding.txt**):
 ```python
