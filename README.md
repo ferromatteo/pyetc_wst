@@ -45,8 +45,9 @@ pip install -e .
 ```python
 from pyetc_wst import WST
 
-# Initialize the ETC
-wst = WST()
+# Initialize the ETC, 'DEBUG' will allow you to see useful prints during the computation,
+# skip_dataload = False will load the static sky configurations +  general transmissions
+wst = WST(log = 'DEBUG', skip_dataload = False)
 
 # Display instrument information
 wst.info()
@@ -69,7 +70,57 @@ res_snr = wst.snr_from_source(con, im, spe)
 res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best')
 ```
 
-Notebbok with specific examples will be included in future version
+A full_obs dictionary should look like this:
+```
+full_obs = {
+    "INS": "moslr",
+    "CH": "red",
+    
+    "NDIT": 1,
+    "DIT": 600, 
+    
+    "SNR": 5,
+    "Lam_Ref": 5000,
+    
+    "OBJ_FIB_DISP": 0,
+    
+    "MOON": 'greysky',
+    "PWV": 10,
+    "FLI": 0.5,
+    "SEE": 0.8,
+    "AM": 1.2,
+    "SKYCALC": False,
+    
+    "Obj_SED": 'template',
+    "SED_Name": 'MARCS_8000K_lg+45',
+    
+    "OBJ_MAG": 15,
+    "MAG_SYS": 'Vega',
+    "MAG_FIL": 'V',
+    
+    "Z": 0,
+    "BB_Temp": 9000.,
+    "PL_Index": None,
+    
+    "SEL_FLUX": 50e-16,
+    "SEL_CWAV": 8000,
+    "SEL_FWHM":20,
+    
+    "Obj_Spat_Dis": 'resolved',
+    
+    "IMA": 'moffat',
+    
+    "IMA_FWHM": 0.5,
+    "IMA_BETA": 2.5,
+    
+    "Sersic_Reff": 1,
+    "Sersic_Ind": 3,
+    
+    "COADD_WL": 10,
+    
+    "COADD_XY": 1
+}
+```
 
 ## Usage Examples
 
