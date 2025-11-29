@@ -32,6 +32,7 @@ pip install -e .
 
 ## Requirements
 
+[ All of them can be installed via `pip` ]
 - Python >= 3.9
 - numpy >= 1.20.0
 - scipy >= 1.7.0
