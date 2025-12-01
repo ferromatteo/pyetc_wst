@@ -10,6 +10,21 @@ Exposure Time Calculator (ETC) for the Wide-Field Spectroscopic Telescope (WST).
 - **MOS-LR** (Multi-Object Spectrograph Low Resolution): Blue, Green, and Red channels  
 - **MOS-HR** (Multi-Object Spectrograph High Resolution): U, B, V, and I channels
 
+## Requirements
+
+[ All of them can be installed via `pip` ]
+- Python >= 3.9
+- numpy >= 1.20.0
+- scipy >= 1.7.0
+- matplotlib >= 3.3.0
+- astropy >= 5.0.0
+- mpdaf >= 3.5.0
+- skycalc_ipy >= 0.1.0
+
+```
+pip install "numpy>=1.20.0" "scipy>=1.7.0" "matplotlib>=3.3.0" "astropy>=5.0.0" "mpdaf>=3.5.0" "skycalc_ipy>=0.1.0"
+```
+
 ## Installation
 
 ### From GitHub
@@ -17,6 +32,24 @@ Exposure Time Calculator (ETC) for the Wide-Field Spectroscopic Telescope (WST).
 You can install directly from GitHub using pip:
 
 ```bash
+pip install git+https://github.com/ferromatteo/pyetc_wst.git
+```
+
+If you already have it installed via pip, you can upgrade it with:
+
+#### Option 1: forced (recommended)
+```bash
+pip install --force-reinstall git+https://github.com/ferromatteo/pyetc_wst.git
+```
+
+#### Option 2: normal upgrade
+```bash
+pip install --upgrade git+https://github.com/ferromatteo/pyetc_wst.git
+```
+
+#### Option 3: uninstall and reinstall (cleanest option)
+```bash
+pip uninstall pyetc_wst
 pip install git+https://github.com/ferromatteo/pyetc_wst.git
 ```
 
@@ -29,17 +62,6 @@ git clone https://github.com/ferromatteo/pyetc_wst.git
 cd pyetc_wst
 pip install -e .
 ```
-
-## Requirements
-
-[ All of them can be installed via `pip` ]
-- Python >= 3.9
-- numpy >= 1.20.0
-- scipy >= 1.7.0
-- matplotlib >= 3.3.0
-- astropy >= 5.0.0
-- mpdaf >= 3.5.0
-- skycalc_ipy >= 0.1.0
 
 ## Quick Start
 
