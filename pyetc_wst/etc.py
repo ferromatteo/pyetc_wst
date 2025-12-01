@@ -164,9 +164,9 @@ class ETC:
         elif fo['Obj_SED'] in ('template', 'pl', 'bb', 'uniform'):
             dummy_type = 'cont'
 
-        # check coadding for IFS, should be odd integer
-        if fo["CH"] == 'ifs' and fo["COADD_XY"] % 2 == 0:
-                raise ValueError("the spatial coadding in the IFS must be an odd integer for a symmetric aperture.")
+        # check coadding for IFS, should be odd integer, now also the even are allowed
+        #if fo["CH"] == 'ifs' and fo["COADD_XY"] % 2 == 0:
+        #        raise ValueError("the spatial coadding in the IFS must be an odd integer for a symmetric aperture.")
 
         inter_dict = {}
 
@@ -253,12 +253,15 @@ class ETC:
         # Handle resolved source image
         ima = None
         if fo['Obj_Spat_Dis'] == 'resolved':
+            # add the uneven to use also even coadding for the image 
+            uneven = 1 if fo['COADD_XY'] % 2 == 1 else 0
             dima = {
                 'type': obs["ima"],
                 'fwhm': obs["ima_fwhm"],
                 'beta': obs["ima_beta"],
                 'n': obs["sersic_ind"],
-                'reff': obs["sersic_reff"]
+                'reff': obs["sersic_reff"],
+                'uneven': uneven
             }
             ima = self.get_image(conf, dima)
 
@@ -468,16 +471,16 @@ class ETC:
          """
 
         if dima['type'] == 'moffat':
-            ima = moffat(ins['spaxel_size'], dima['fwhm'], dima['beta'])
+            ima = moffat(ins['spaxel_size'], dima['fwhm'], dima['beta'], uneven=dima.get('uneven', 0))
         elif dima['type'] == 'sersic':
-            ima = sersic(ins['spaxel_size'], dima['reff'], dima['n'])
+            ima = sersic(ins['spaxel_size'], dima['reff'], dima['n'], uneven=dima.get('uneven', 0))
         else:
             raise ValueError(f"Unknown image type {dima['type']}")
 
         return ima
 
     # PSF images at a specific wavelengths
-    def get_image_psf(self, ins, wave):
+    def get_image_psf(self, ins, wave, uneven=1):
         """Compute PSF image(s) for one or more wavelengths.
 
         Parameters
@@ -486,6 +489,9 @@ class ETC:
             instrument (eg self.ifs['blue'] or self.moslr['red'])
         wave : float or array-like
             wavelength(s) in Angstrom
+        uneven : int
+            if 1 odd-sized image (centered on pixel), 
+            if 0 even-sized (centered between pixels) (Default value = 1)
 
         Returns
         -------
@@ -506,20 +512,21 @@ class ETC:
 
         # Manage single or multiple wavelengths
         if np.isscalar(iq):
-            ima = moffat(ins['spaxel_size'], iq, ins['iq_beta'])
+            ima = moffat(ins['spaxel_size'], iq, ins['iq_beta'], uneven=uneven)
             ima.data /= ima.data.sum()
             ima.oversamp = 10
             return ima
         else:
             ima_arr = []
             for val in iq:
-                ima = moffat(ins['spaxel_size'], val, ins['iq_beta'])
+                ima = moffat(ins['spaxel_size'], val, ins['iq_beta'], uneven=uneven)
                 ima.data /= ima.data.sum()
                 ima.oversamp = 10
                 ima_arr.append(ima)
             return ima_arr
 
     # IFS function for the fraction of flux collected in peak spaxel and in NxN region
+    # added the difference between odd/even N
     def ifs_spaxel_aperture(self, ins, ima, N=3):
         """
         Compute the fraction of flux collected in the central spaxel and in a centered NxN region.
@@ -546,14 +553,28 @@ class ETC:
 
         # Central spaxel
         half = oversamp // 2
-        ymin, ymax = cy - half, cy + half + (oversamp % 2)
-        xmin, xmax = cx - half, cx + half + (oversamp % 2)
+        if N % 2 == 1:  # Odd
+            ymin, ymax = cy - half, cy + half + (oversamp % 2)
+            xmin, xmax = cx - half, cx + half + (oversamp % 2)
+        else:  # Even
+            ymin, ymax = cy - half, cy + half
+            xmin, xmax = cx - half, cx + half
+
         flux_central_spaxel = ima.data[ymin:ymax, xmin:xmax].sum()
 
         # NxN region
         half_N = (N * oversamp) // 2
-        ymin_N, ymax_N = cy - half_N, cy + half_N + (N * oversamp % 2)
-        xmin_N, xmax_N = cx - half_N, cx + half_N + (N * oversamp % 2)
+        if N % 2 == 1:  # Odd
+            ymin_N = cy - half_N
+            ymax_N = cy + half_N + (N * oversamp % 2)
+            xmin_N = cx - half_N
+            xmax_N = cx + half_N + (N * oversamp % 2)
+        else:  # Even
+            ymin_N = cy - half_N
+            ymax_N = cy + half_N
+            xmin_N = cx - half_N
+            xmax_N = cx + half_N
+
         flux_NxN = ima.data[ymin_N:ymax_N, xmin_N:xmax_N].sum()
 
         return flux_central_spaxel, flux_NxN
@@ -815,7 +836,9 @@ class ETC:
             snr_square = snr_peak * obs['ima_coadd']
 
         elif obs['ima_type'] in ['ps', 'resolved']:
-            psf_array = self.get_image_psf(ins, selected_wave)
+            # added to distingish even/odd coadding for PSF images
+            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
+            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
@@ -1056,7 +1079,8 @@ class ETC:
             source_ph_aperture = factor_source * (np.pi * ins['aperture'] / 2)**2
         
         elif obs['ima_type'] in ['ps', 'resolved']:
-            psf_array = self.get_image_psf(ins, selected_wave)
+            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
+            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
@@ -1324,7 +1348,8 @@ class ETC:
             source_ph_square = source_ph_peak * obs['ima_coadd']**2
 
         elif obs['ima_type'] in ['ps', 'resolved']:
-            psf_array = self.get_image_psf(ins, selected_wave)
+            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
+            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
@@ -1589,7 +1614,8 @@ class ETC:
             source_ph_aperture = factor_source * (np.pi * ins['aperture'] / 2)**2
         
         elif obs['ima_type'] in ['ps', 'resolved']:
-            psf_array = self.get_image_psf(ins, selected_wave)
+            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
+            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
