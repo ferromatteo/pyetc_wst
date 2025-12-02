@@ -69,7 +69,7 @@ pip install -e .
 from pyetc_wst import WST
 
 # Initialize the ETC, 'DEBUG' will allow you to see useful prints during the computation,
-# skip_dataload = False will load the static sky configurations +  general transmissions
+# skip_dataload = False will load the static sky configurations + general transmissions
 wst = WST(log = 'DEBUG', skip_dataload = False)
 
 # Display instrument information
