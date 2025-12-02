@@ -938,6 +938,10 @@ class ETC:
             sky_pix = sky_ph_spaxel.data[i]
             d_pix = dark
             
+            # Clamp to non-negative values to avoid Poisson distribution errors, Nans, etc...
+            s_pix = max(0.0, s_pix) if not np.isnan(s_pix) else 0.0
+            sky_pix = max(0.0, sky_pix) if not np.isnan(sky_pix) else 0.0
+            
             sim_counts = simulate_counts(
                 npix=obs['ima_coadd']**2,
                 source=s_pix,
