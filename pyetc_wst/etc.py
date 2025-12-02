@@ -527,6 +527,7 @@ class ETC:
 
     # IFS function for the fraction of flux collected in peak spaxel and in NxN region
     # added the difference between odd/even N
+    # added fix padding images for large coadding which exceed image boundaries
     def ifs_spaxel_aperture(self, ins, ima, N=3):
         """
         Compute the fraction of flux collected in the central spaxel and in a centered NxN region.
@@ -544,38 +545,74 @@ class ETC:
         -------
         tuple
             (flux_central_spaxel, flux_NxN)
-            - flux_central_spaxel: fraction of flux in the central spaxel
-            - flux_NxN: fraction of flux in the centered NxN region
         """
         oversamp = ima.oversamp
         ny, nx = ima.data.shape
         cy, cx = np.unravel_index(np.argmax(ima.data), ima.data.shape)
 
-        # Central spaxel
-        half = oversamp // 2
-        if N % 2 == 1:  # Odd
-            ymin, ymax = cy - half, cy + half + (oversamp % 2)
-            xmin, xmax = cx - half, cx + half + (oversamp % 2)
-        else:  # Even
-            ymin, ymax = cy - half, cy + half
-            xmin, xmax = cx - half, cx + half
-
-        flux_central_spaxel = ima.data[ymin:ymax, xmin:xmax].sum()
-
-        # NxN region
+        # Calculate NxN aperture extent
         half_N = (N * oversamp) // 2
+        
+        # Determine aperture boundaries (before any padding)
         if N % 2 == 1:  # Odd
             ymin_N = cy - half_N
             ymax_N = cy + half_N + (N * oversamp % 2)
             xmin_N = cx - half_N
             xmax_N = cx + half_N + (N * oversamp % 2)
-        else:  # Even
+        else:  # Even - centered on 4-pixel junction
             ymin_N = cy - half_N
             ymax_N = cy + half_N
             xmin_N = cx - half_N
             xmax_N = cx + half_N
 
-        flux_NxN = ima.data[ymin_N:ymax_N, xmin_N:xmax_N].sum()
+        # Calculate required padding (symmetric on both sides)
+        pad_top = max(0, -ymin_N)
+        pad_bottom = max(0, ymax_N - ny)
+        pad_left = max(0, -xmin_N)
+        pad_right = max(0, xmax_N - nx)
+        
+        # Pad image with zeros if aperture would exceed boundaries
+        if pad_top > 0 or pad_bottom > 0 or pad_left > 0 or pad_right > 0:
+            padded_data = np.pad(ima.data, 
+                                ((pad_top, pad_bottom), (pad_left, pad_right)), 
+                                mode='constant', 
+                                constant_values=0)
+            # Update center coordinates after padding
+            cy += pad_top
+            cx += pad_left
+            
+            # Recalculate aperture boundaries in padded coordinates
+            if N % 2 == 1:  # Odd
+                ymin_N = cy - half_N
+                ymax_N = cy + half_N + (N * oversamp % 2)
+                xmin_N = cx - half_N
+                xmax_N = cx + half_N + (N * oversamp % 2)
+            else:  # Even
+                ymin_N = cy - half_N
+                ymax_N = cy + half_N
+                xmin_N = cx - half_N
+                xmax_N = cx + half_N
+        else:
+            padded_data = ima.data
+
+        # Central spaxel extraction
+        if N % 2 == 1:  # Odd - extract full spaxel centered on peak pixel
+            half = oversamp // 2
+            ymin = cy - half
+            ymax = cy + half + (oversamp % 2)
+            xmin = cx - half
+            xmax = cx + half + (oversamp % 2)
+        else:  # Even - extract ONE of the 4 central spaxels (top-left)
+            # Peak is at junction, so take the top-left spaxel
+            ymin = cy - oversamp
+            ymax = cy
+            xmin = cx - oversamp
+            xmax = cx
+
+        flux_central_spaxel = padded_data[ymin:ymax, xmin:xmax].sum()
+
+        # NxN region extraction
+        flux_NxN = padded_data[ymin_N:ymax_N, xmin_N:xmax_N].sum()
 
         return flux_central_spaxel, flux_NxN
 
@@ -1083,8 +1120,7 @@ class ETC:
             source_ph_aperture = factor_source * (np.pi * ins['aperture'] / 2)**2
         
         elif obs['ima_type'] in ['ps', 'resolved']:
-            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
-            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
+            psf_array = self.get_image_psf(ins, selected_wave)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
@@ -1618,8 +1654,7 @@ class ETC:
             source_ph_aperture = factor_source * (np.pi * ins['aperture'] / 2)**2
         
         elif obs['ima_type'] in ['ps', 'resolved']:
-            uneven = 1 if obs['ima_coadd'] % 2 == 1 else 0
-            psf_array = self.get_image_psf(ins, selected_wave, uneven=uneven)
+            psf_array = self.get_image_psf(ins, selected_wave)
             
             if obs['ima_type'] == 'ps':
                 array_of_images = psf_array
@@ -1892,7 +1927,7 @@ def get_data(obj, chan, name, skydir, transdir):
 
 # # # image generation functions # # #
 
-def sersic(samp, reff, n, ell=0, kreff=5, oversamp=10, uneven=1):
+def sersic(samp, reff, n, ell=0, kreff=4, oversamp=10, uneven=1):
     """ compute a 2D Sersic image
 
     Parameters
@@ -1935,7 +1970,7 @@ def sersic(samp, reff, n, ell=0, kreff=5, oversamp=10, uneven=1):
     ima.oversamp = oversamp
     return ima
 
-def moffat(samp, fwhm, beta, ell=0, kfwhm=4, oversamp=10, uneven=1):
+def moffat(samp, fwhm, beta, ell=0, kfwhm=5, oversamp=10, uneven=1):
     """ compute a 2D Moffat image
 
     Parameters
