@@ -155,8 +155,8 @@ or
 res_snr['spec']['nph_source'].plot()
 ```
 
-In general the results of the snr computation `res_snr` will have a main dictionary res_snr['spec'] which contains several sub-dictionaries, all related to the 
-integration in the aperture area for the MOS, and the requested `COADD_XY x COADD_XY` for the IFS (which has also another dictionary res_snr['peak']) for the central pixel value.
+In general the results of the snr computation `res_snr` will have a main dictionary `res_snr['spec']` which contains several sub-dictionaries, all related to the 
+integration in the aperture area for the MOS, and the requested `COADD_XY x COADD_XY` for the IFS (which has also another dictionary `res_snr['peak']`) for the central pixel value.
 
 These sub-dictionaries include:
 - 'nph_source': photon from source
