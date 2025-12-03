@@ -18,11 +18,11 @@ Exposure Time Calculator (ETC) for the Wide-Field Spectroscopic Telescope (WST).
 - scipy >= 1.7.0
 - matplotlib >= 3.3.0
 - astropy >= 5.0.0
-- mpdaf >= 3.5.0
+- mpdaf >= 3.6.0
 - skycalc_ipy >= 0.1.0
 
 ```
-pip install "numpy>=1.20.0" "scipy>=1.7.0" "matplotlib>=3.3.0" "astropy>=5.0.0" "mpdaf>=3.5.0" "skycalc_ipy>=0.1.0"
+pip install "numpy>=1.20.0" "scipy>=1.7.0" "matplotlib>=3.3.0" "astropy>=5.0.0" "mpdaf>=3.6.0" "skycalc_ipy>=0.1.0"
 ```
 
 ## Installation
