@@ -109,7 +109,6 @@ full_obs = {
     
     "OBJ_FIB_DISP": 0,
     
-    "MOON": 'greysky',
     "PWV": 10,
     "FLI": 0.5,
     "SEE": 0.8,
