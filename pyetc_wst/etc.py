@@ -185,7 +185,6 @@ class ETC:
             ima_coadd=fo.get("COADD_XY", None),
 
             skycalc=fo.get("SKYCALC", None),
-            moon=fo.get("MOON", None),
             airmass=fo.get("AM", None),
             pwv=fo.get("PWV", None),
             fli=fo.get("FLI", None),
@@ -223,6 +222,20 @@ class ETC:
 
         self.set_obs(obs)
 
+        # we compute the moon keywords here given the the FLI values, allowed values are 
+        # 0 (darksky), 0.5 (greysky), 1 (brightsky), for skycalc = False
+        if fo['FLI'] == 0:
+            moon = 'darksky'
+        elif fo['FLI'] == 0.5:
+            moon = 'greysky'
+        elif fo['FLI'] == 1:
+            moon = 'brightsky'
+        else:
+            moon = None
+
+        # add moon to obs dictionary
+        obs['moon'] = moon
+
         # we put here some other checks on values of the variables
         if fo['COADD_WL'] < 1:
             raise ValueError("the spectral coadding must be a positive integer.")
@@ -235,12 +248,9 @@ class ETC:
 
         # we compute the sky configuration/or take it from the static files, 
         # the sky spectrum is already convoluted for the LSF
-        if obs["skycalc"]:
-            obs["skyemi"], obs["skyabs"] = self.get_sky()
-        elif obs["skycalc"] == False:
-            obs["skyemi"], obs["skyabs"] = self.get_sky()
-        else:
+        if not isinstance(obs["skycalc"], bool):
             raise ValueError('SKYCALC must be True or False')
+        obs["skyemi"], obs["skyabs"] = self.get_sky()
 
         # if the spectrum is line, we override the lam_ref with the center of the line in wave_center
         if fo['Obj_SED'] == 'line':
@@ -294,10 +304,12 @@ class ETC:
 
         if static:
             # look up in the loaded static sky files
+            available_airmass = set(sky['airmass'] for sky in conf['sky'])
+            available_moon = set(sky['moon'] for sky in conf['sky'])
             for sky in conf['sky']:
                 if np.isclose(sky['airmass'], airmass) and (sky['moon'] == moon):
                     return sky['emi'], sky['abs']
-            raise ValueError(f"moon {moon} airmass {airmass} not found in loaded sky configurations")
+            raise ValueError(f"moon {moon} airmass {airmass} not found in loaded sky configurations. Available airmass: {sorted(available_airmass)}, available moon: {sorted(available_moon)}")
         else:
             # compute on the fly with skycalc
 
