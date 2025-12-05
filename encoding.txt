@@ -23,19 +23,18 @@ Needed only for moshr/moslr
     
 "SEE" (float/int, positive) - SEEING
      
-"SKYCALC" (bool)
+"SKYCALC" (bool) - CALL OF THE ESO SKYCALC TOOL (TRUE) OR USAGE OF STATIC SKY FILES (FALSE)
 
-"MOON" (str): "darksky", "greysky", "brightsky" (used only with SKYCALC=False)
+"FLI": - FRACTIONAL OF THE MOON ILLUMINATED
+with SKYCALC=False float in [0.0, 1.5, 1.0] (is then translated into fixed MOON 'darksky', 'greysky', 'brightsky')
+with SKYCALC=True  float/int, should be in [0,1] 
 
 "AM": - AIRMASS
 with SKYCALC=False float in [1.0, 1.2, 1.5, 2.0]
-
 with SKYCALC=True  float/int
 
-
-The following TWO used only with SKYCALC=True
+The following used only with SKYCALC=True
 "PWV": float/int (will be rounded to the nearest number to [0.05, 0.1, 0.25, 0.5, 1.0, 1.5, 2.5, 3.5, 5.0, 7.5, 10.0, 20.0]) - PRECIPITABLE WATER VAPOR
-"FLI": float/int, should be in [0, 1] - FRACTIONAL OF THE MOON ILLUMINATED
 
 "Obj_SED":
 - "template"
