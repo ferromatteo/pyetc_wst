@@ -264,7 +264,8 @@ class ETC:
         ima = None
         if fo['Obj_Spat_Dis'] == 'resolved':
             # add the uneven to use also even coadding for the image 
-            uneven = 1 if fo['COADD_XY'] % 2 == 1 else 0
+            coadd_xy = fo.get('COADD_XY')
+            uneven = 0 if coadd_xy is not None and coadd_xy % 2 == 0 else 1
             dima = {
                 'type': obs["ima"],
                 'fwhm': obs["ima_fwhm"],
@@ -2276,4 +2277,5 @@ def simulate_counts(npix, source=None, sky=None, dark=None, RON=None, seed=None)
 # Add the rounding of computed NDIT to the nearest integer in the time_from_source methods, this is done only in the best case now
 # Add a way to not compute again the snr_from_source from scratch when computing time_from_source, we have everything we need there (fractions, source counts, sky counts, etc.) > we can just add a flag to save everything in the res dictionaries
 # There could be problems when requesting a SNR at a wavelength near the edge of the spectrum, in case of rebinning this could lead to errors, we should add checks for that
+
 # # # # # # # # # # # # # # #
