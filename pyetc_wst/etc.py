@@ -32,7 +32,7 @@ filter_manager = FilterManager(phot_system)
 C_cgs = constants.c.cgs.value
 H_cgs = constants.h.cgs.value
 
-# number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR
+# number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR 
 trace_pixel_width = 8
 
 # tolerance to check for wavelength range
@@ -521,8 +521,9 @@ class ETC:
 
             # Resample using fast np.interp instead of MPDAF resample (spline)
             t_resample = time.time() if debug else None
-            # Create target wavelength grid
-            npts = int((l2 - l1) / lstep) + 1
+            # Create target wavelength grid — use authoritative size from instrans
+            # to avoid off-by-one from float rounding in int((l2-l1)/lstep)+1
+            npts = conf['instrans'].shape[0]
             target_wave = np.linspace(l1, l1 + (npts - 1) * lstep, npts)
             # Fast linear interpolation
             resampled_flux = np.interp(target_wave, def_wave, flux * K)
@@ -2365,15 +2366,16 @@ def get_data(obj, chan, name, skydir, transdir):
     filename = glob.glob(os.path.join(transdir,f'{name}_{chan}_noatm.fits'))[0]
     trans=Table.read(os.path.join(transdir,filename), unit_parse_strict="silent")
     
+    # # # Not needed anymore from Olga's throughput files
     # We compute the total transmision (excluded atmosphere)
-    cc = trans.colnames[1:] 
-    all = np.prod([trans[c] for c in cc], axis=0)
-    trans['trans'] = all
+    #cc = trans.colnames[1:-1] 
+    #all = np.prod([trans[c] for c in cc], axis=0)
+    #trans['trans'] = all
 
     # We compute the instrument only transmission (exluded CCD and telescope, all the other columns)
-    trans['only_inst'] = all / (trans['detector_QE'] * trans['telescope'])
+    trans['only_inst'] = trans['total'] / (trans['detector_QE'] * trans['telescope'])
 
-    ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['trans']),  wave=ins['sky'][0]['emi'].wave)
+    ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['total']),  wave=ins['sky'][0]['emi'].wave)
     ins['telescope'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['telescope']),  wave=ins['sky'][0]['emi'].wave)
     ins['QE'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['detector_QE']),  wave=ins['sky'][0]['emi'].wave)
     ins['total_instrumental'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['only_inst']),  wave=ins['sky'][0]['emi'].wave)
