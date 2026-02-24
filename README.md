@@ -198,6 +198,11 @@ This package has been developed from the original `pyetc` package available at h
 
 update in future version
 
+## Version
+
+### 2.0:
+- Added the new throughput curves, MOSLR and MOSHR now have both 4 channels (Blue, Green, Yellow, Red)
+ 
 ## Contact
 
 Matteo Ferro - [matteo.ferro@inaf.it]
