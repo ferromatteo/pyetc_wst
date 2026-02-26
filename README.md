@@ -7,8 +7,8 @@ Exposure Time Calculator (ETC) for the Wide-Field Spectroscopic Telescope (WST).
 **pyetc_wst** is a Python package for exposure time calculation and signal-to-noise ratio (SNR) estimation for the WST instrument suite, including:
 
 - **IFS** (Integral Field Spectrograph): Blue and Red channels
-- **MOS-LR** (Multi-Object Spectrograph Low Resolution): Blue, Green, Yellow, and Red channels  
-- **MOS-HR** (Multi-Object Spectrograph High Resolution): Blue, Green, Yellow, and Red channels
+- **MOS-LR** (Multi-Object Spectrograph Low Resolution): Blue, Green, and Red channels  
+- **MOS-HR** (Multi-Object Spectrograph High Resolution): U, B, V, and I channels
 
 ## Requirements
 
@@ -83,7 +83,7 @@ wst.info()
 # Access specific instruments
 ifs_blue = wst.ifs['blue']
 moslr_red = wst.moslr['red']
-moshr_yellow = wst.moshr['yellow']
+moshr_U = wst.moshr['U']
 
 # Build the full dictionaries needed for computation (full_obs), which will include observing conditions, source properties, computation requests, and instrument configuration
 full_obs = {...}
