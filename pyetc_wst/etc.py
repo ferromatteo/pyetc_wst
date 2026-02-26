@@ -2366,16 +2366,15 @@ def get_data(obj, chan, name, skydir, transdir):
     filename = glob.glob(os.path.join(transdir,f'{name}_{chan}_noatm.fits'))[0]
     trans=Table.read(os.path.join(transdir,filename), unit_parse_strict="silent")
     
-    # # # Not needed anymore from Olga's throughput files
     # We compute the total transmision (excluded atmosphere)
-    #cc = trans.colnames[1:-1] 
-    #all = np.prod([trans[c] for c in cc], axis=0)
-    #trans['trans'] = all
+    cc = trans.colnames[1:] 
+    all = np.prod([trans[c] for c in cc], axis=0)
+    trans['trans'] = all
 
     # We compute the instrument only transmission (exluded CCD and telescope, all the other columns)
-    trans['only_inst'] = trans['total'] / (trans['detector_QE'] * trans['telescope'])
+    trans['only_inst'] = all / (trans['detector_QE'] * trans['telescope'])
 
-    ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['total']),  wave=ins['sky'][0]['emi'].wave)
+    ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['trans']),  wave=ins['sky'][0]['emi'].wave)
     ins['telescope'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['telescope']),  wave=ins['sky'][0]['emi'].wave)
     ins['QE'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['detector_QE']),  wave=ins['sky'][0]['emi'].wave)
     ins['total_instrumental'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['only_inst']),  wave=ins['sky'][0]['emi'].wave)
