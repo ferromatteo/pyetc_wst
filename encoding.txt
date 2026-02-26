@@ -7,7 +7,7 @@
 
 "CH" (str): 
 - for "moslr": "blue", "green", "yellow" or "red"
-- for "moshr": "blue", "green", "yellow" or "red"
+- for "moshr": "U", "B", "V" or "I"
 - for "ifs": "blue" or "red"
 
 "NDIT" (float/int, positive) - NUMBER OF EXPOSURES
