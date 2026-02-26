@@ -63,6 +63,11 @@ cd pyetc_wst
 pip install -e .
 ```
 
+### For the Survey branch 
+```bash
+pip install --force-reinstall git+https://github.com/ferromatteo/pyetc_wst.git@survey
+```
+
 ## Quick Start
 
 ```python
