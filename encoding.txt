@@ -6,7 +6,7 @@
 - "ifs"
 
 "CH" (str): 
-- for "moslr": "blue", "green", "yellow" or "red"
+- for "moslr": "blue", "green" or "red"
 - for "moshr": "U", "B", "V" or "I"
 - for "ifs": "blue" or "red"
 
