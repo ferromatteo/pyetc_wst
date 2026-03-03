@@ -31,8 +31,12 @@ class WST(ETC):
         self.tel = dict(effective_area_MOS=93.57, # mean of median and weighted mean of the ICD document
                         effective_area_IFS=92.03, # minimum of the ICD document
                         diameter=12.0, # primary diameter
-                        desc='Cass design',
-                        version='03/11/2025',
+                        desc='Based on Design doc: WST-00006_3 Telescope optical design report', # Link: https://stfc365.sharepoint.com/sites/Wide-FieldSpectroscopicTelescope/_layouts/15/DocIdRedir.aspx?ID=7ZWYDD3PV4SU-175398458-2018
+                        version='03/03/2026',
+                        iq_fwhm_ins = {
+                            'ifs': 0.1, # average FWHM on 95% FOV as also used in the WST_IFS_Tradeoff_Matrix. Link: https://stfc365.sharepoint.com/sites/Wide-FieldSpectroscopicTelescope/_layouts/15/DocIdRedir.aspx?ID=7ZWYDD3PV4SU-175398458-2008
+                            'mos': 0.1875,
+                            }
                         )        
         # ------- IFS -----------
         self.ifs = {} 
@@ -40,18 +44,18 @@ class WST(ETC):
         # IFS blue channel
         chan = 'blue'
         self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput, modified with inputs from the IFS team',
-                              version = '15/10/2025',
+                              version = '03/03/2026',
                               type = 'IFS',
-                              iq_fwhm_tel = np.sqrt(2)/2 * 0.10, # fwhm PSF of telescope
-                              iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                              iq_fwhm_tel = self.tel['iq_fwhm_ins']['ifs'], # fwhm PSF of telescope
+                              iq_fwhm_ins = 0.13, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026, this probably considers also the detector (charge diffusion)
                               iq_beta = 2.50, # beta PSF of telescope + instrument
-                              spaxel_size = 0.25, # spaxel size in arcsec
-                              dlbda = 0.50, # Angstroem/pixel
+                              spaxel_size = 0.25, # spaxel size in arcsec ( * * * check for the binning 2x1, could be 0.125)
+                              dlbda = 0.48, # Angstroem/pixel, previously 0.5, updated on 03/03/2026
                               lbda1 = 3700, # starting wavelength in Angstroem
                               lbda2 = 6400, # end wavelength in Angstroem
-                              lsfpix = 3.0, # LSF in spectel
-                              ron = 3.0, # readout noise (e-)
-                              dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                              lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
+                              ron = 1.0, # readout noise (e-)
+                              dcurrent = 1.0, # dark current (e-/pixel/h)                                
                               )
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
@@ -59,18 +63,18 @@ class WST(ETC):
         # IFS red channel
         chan = 'red'
         self.ifs[chan] = dict(desc='Inspired from MUSE throughput, modified with inputs from the IFS team', 
-                               version = '15/10/2025',
+                               version = '03/03/2026',
                                type='IFS',
-                               iq_fwhm_tel = np.sqrt(2)/2 * 0.10, # fwhm PSF of telescope
-                               iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                               iq_fwhm_tel = self.tel['iq_fwhm_ins']['ifs'], # fwhm PSF of telescope
+                               iq_fwhm_ins = 0.13, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026, this probably considers also the detector (charge diffusion)
                                iq_beta = 2.50, # beta PSF of telescope + instrument
-                               spaxel_size = 0.25, # spaxel size in arcsec
-                               dlbda = 0.67, # Angstroem/pixel
+                               spaxel_size = 0.25, # spaxel size in arcsec ( * * * check for the binning 2x1, could be 0.125)
+                               dlbda = 0.64, # Angstroem/pixel, previously 0.67, updated on 03/03/2026
                                lbda1 = 6200, # starting wavelength in Angstroem
                                lbda2 = 9800, # end wavelength in Angstroem
-                               lsfpix = 3.0, # LSF in spectel
-                               ron = 3.0, # readout noise (e-)
-                               dcurrent = 3.0, # dark current (e-/pixel/h)
+                               lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
+                               ron = 1.0, # readout noise (e-)
+                               dcurrent = 1.0, # dark current (e-/pixel/h)
                                )
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
@@ -84,19 +88,19 @@ class WST(ETC):
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope
+                                iq_fwhm_ins = 0.20, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.208, # spaxel size in arcsec
+                                spaxel_size = 0.1515 , # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec 
-                                dlbda = 0.256, # Angstroem/pixel 
-                                lbda1 = 3700, # starting wavelength in Angstroem **from Olga's throughput (Should be 3650 according to the document, but the curve starts at 3700)
+                                dlbda = 0.206, # Angstroem/pixel, previously 0.256, updated on 03/03/2026
+                                lbda1 = 3700, # starting wavelength in Angstroem **from Olga's throughput
                                 lbda2 = 4770, # end wavelength in Angstroem **from Olga's throughput
-                                lsfpix = 4.83, # LSF in spectel 
-                                ron = 3.0, # readout noise (e-) 
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                           
+                                lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-) 
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                           
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
@@ -104,19 +108,19 @@ class WST(ETC):
         # MOS-LR green channel      
         chan = self.moslr['channels'][1] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope
+                                iq_fwhm_ins = 0.20, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.208, # spaxel size in arcsec
+                                spaxel_size = 0.1515 , # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
-                                dlbda = 0.352, # Angstroem/pixel
+                                dlbda = 0.266, # Angstroem/pixel, previously 0.352, updated on 03/03/2026
                                 lbda1 = 4630, # starting wavelength in Angstroem **from Olga's throughput
                                 lbda2 = 6080, # end wavelength in Angstroem **from Olga's throughput
-                                lsfpix = 4.83, # LSF in spectel
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
@@ -124,19 +128,19 @@ class WST(ETC):
         # MOS-LR yellow channel      
         chan = self.moslr['channels'][2] 
         self.moslr[chan] = dict(desc='New channel added',
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope
+                                iq_fwhm_ins = 0.20, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.208, # spaxel size in arcsec
+                                spaxel_size = 0.1515, # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
-                                dlbda = 0.352, # Angstroem/pixel
+                                dlbda = 0.344, # Angstroem/pixel, previously 0.352, updated on 03/03/2026
                                 lbda1 = 5920, # starting wavelength in Angstroem **from Olga's throughput
                                 lbda2 = 7710, # end wavelength in Angstroem **from Olga's throughput
-                                lsfpix = 4.83, # LSF in spectel
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                             
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
@@ -144,19 +148,19 @@ class WST(ETC):
         # MOS-LR red channel      
         chan = self.moslr['channels'][3] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput, modified with inputs from the MOSLR team',
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope
+                                iq_fwhm_ins = 0.20, # fwhm PSF of instrument, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.208, # spaxel size in arcsec
+                                spaxel_size = 0.1515, # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
-                                dlbda = 0.486, # Angstroem/pixel
+                                dlbda = 0.362, # Angstroem/pixel, previously 0.486, updated on 03/03/2026
                                 lbda1 = 7490, # starting wavelength in Angstroem **from Olga's throughput
-                                lbda2 = 9800, # end wavelength in Angstroem **from Olga's throughput (should be 9840 according to the document, but the curve ends at 9800)
-                                lsfpix = 4.83, # LSF in spectel
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lbda2 = 9800, # end wavelength in Angstroem **from Olga's throughput
+                                lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                              
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
@@ -165,42 +169,42 @@ class WST(ETC):
         # --------- MOS-HR 4 channels ------------- # We use catadioptric
         self.moshr = {} 
         self.moshr['channels'] = ['blue', 'green', 'yellow', 'red']       
-        # MOS-HR U channel 
+        # MOS-HR blue channel 
         chan = self.moshr['channels'][0]
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Blue channel',  
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope
+                                iq_fwhm_ins = 0.16, # fwhm PSF of instrument, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
+                                spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
-                                dlbda = 0.036, # Angstroem/pixel, from catadioptric design, 0.030 for dioptric
+                                dlbda = 0.027, # Angstroem/pixel, updated on 03/03/2026
                                 lbda1 = 3700, # starting wavelength in Angstroem **same as Olga's throughput
                                 lbda2 = 4090, # end wavelength in Angstroem **same as Olga's throughput
-                                lsfpix = 2.7, # LSF in spectel, from catadioptric design, 3.6 for dioptric
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
             get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
             
-        # MOS-HR B channel 
+        # MOS-HR green channel 
         chan = self.moshr['channels'][1]
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Green channel',  
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope, updated on 03/03/2026
+                                iq_fwhm_ins = 0.16, # fwhm PSF of instrument, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
+                                spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
-                                dlbda = 0.042, # Angstroem/pixel, from catadioptric design, 0.032 for dioptric
+                                dlbda = 0.032, # Angstroem/pixel, updated on 03/03/2026
                                 lbda1 = 4270, # starting wavelength in Angstroem **same as Olga's throughput
                                 lbda2 = 4720, # end wavelength in Angstroem **same as Olga's throughput
-                                lsfpix = 2.7, # LSF in spectel, from catadioptric design, 3.6 for dioptric
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
             get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
@@ -208,19 +212,19 @@ class WST(ETC):
         # MOS-HR V channel
         chan = self.moshr['channels'][2]
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Yellow channel',  
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope, updated on 03/03/2026
+                                iq_fwhm_ins = 0.16, # fwhm PSF of instrument, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.137, # spaxel size in arcsec, from catadioptric design, 0.116 for dioptric
+                                spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
-                                dlbda = 0.054, # Angstroem/pixel, from catadioptric design, 0.048 for dioptric
+                                dlbda = 0.043, # Angstroem/pixel, updated on 03/03/2026
                                 lbda1 = 5890, # starting wavelength in Angstroem  **same as Olga's throughput
                                 lbda2 = 6510, # end wavelength in Angstroem  **same as Olga's throughput
-                                lsfpix = 2.7, # LSF in spectel, from catadioptric design, 3.6 for dioptric
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                              
                                 )
         if not skip_dataload:
             get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
@@ -228,19 +232,19 @@ class WST(ETC):
         # MOS-HR I channel
         chan = self.moshr['channels'][3]
         self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description, renamed Red channel',  
-                                version = '24/02/2026',
+                                version = '03/03/2026',
                                 type = 'MOS',
-                                iq_fwhm_tel = 0.1875, # fwhm PSF of telescope
-                                iq_fwhm_ins = 0.30, # fwhm PSF of instrument **
+                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['mos'], # fwhm PSF of telescope, updated on 03/03/2026
+                                iq_fwhm_ins = 0.16, # fwhm PSF of instrument, updated on 03/03/2026
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.2067, # spaxel size in arcsec
+                                spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
-                                dlbda = 0.063, # Angstroem/pixel, from catadioptric design, 0.055 for dioptric
+                                dlbda = 0.048, # Angstroem/pixel, updated on 03/03/2026
                                 lbda1 = 6650, # starting wavelength in Angstroem **same as Olga's throughput
                                 lbda2 = 7350, # end wavelength in Angstroem **same as Olga's throughput
-                                lsfpix = 2.7, # LSF in spectel, from catadioptric design, 3.6 for dioptric
-                                ron = 3.0, # readout noise (e-)
-                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
+                                ron = 1.0, # readout noise (e-)
+                                dcurrent = 1.0, # dark current (e-/pixel/h)                        
                                 )
         if not skip_dataload:
             get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
