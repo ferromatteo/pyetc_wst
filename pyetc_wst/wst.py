@@ -42,7 +42,7 @@ class WST(ETC):
         self.ifs = {} 
         self.ifs['channels'] = ['blue', 'red']
         # IFS blue channel
-        chan = 'blue'
+        chan = 'blue' # commento 
         self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput, modified with inputs from the IFS team',
                               version = '03/03/2026',
                               type = 'IFS',
@@ -277,3 +277,4 @@ class WST(ETC):
                
         
         
+
