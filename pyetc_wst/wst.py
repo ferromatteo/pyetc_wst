@@ -42,9 +42,9 @@ class WST(ETC):
         self.ifs = {} 
         self.ifs['channels'] = ['blue', 'red']
         # IFS blue channel
-        chan = 'blue' # commento 
+        chan = 'blue'
         self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput, modified with inputs from the IFS team',
-                              version = '03/03/2026',
+                              version = '09/03/2026',
                               type = 'IFS',
                               iq_fwhm_tel = self.tel['iq_fwhm_ins']['ifs'], # fwhm PSF of telescope
                               iq_fwhm_ins = 0.13, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026, this probably considers also the detector (charge diffusion)
@@ -54,8 +54,8 @@ class WST(ETC):
                               lbda1 = 3700, # starting wavelength in Angstroem
                               lbda2 = 6400, # end wavelength in Angstroem
                               lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
-                              ron = 1.0, # readout noise (e-)
-                              dcurrent = 1.0, # dark current (e-/pixel/h)                                
+                              ron = 1.0 * np.sqrt(2), # readout noise (e-) # squared sum for the 2x1 binning
+                              dcurrent = 1.0 * 2, # dark current (e-/pixel/h) # sum for the 2x1 binning                                
                               )
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
@@ -63,7 +63,7 @@ class WST(ETC):
         # IFS red channel
         chan = 'red'
         self.ifs[chan] = dict(desc='Inspired from MUSE throughput, modified with inputs from the IFS team', 
-                               version = '03/03/2026',
+                               version = '09/03/2026',
                                type='IFS',
                                iq_fwhm_tel = self.tel['iq_fwhm_ins']['ifs'], # fwhm PSF of telescope
                                iq_fwhm_ins = 0.13, # fwhm PSF of instrument, previously 0.30, updated on 03/03/2026, this probably considers also the detector (charge diffusion)
@@ -73,8 +73,8 @@ class WST(ETC):
                                lbda1 = 6200, # starting wavelength in Angstroem
                                lbda2 = 9800, # end wavelength in Angstroem
                                lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
-                               ron = 1.0, # readout noise (e-)
-                               dcurrent = 1.0, # dark current (e-/pixel/h)
+                               ron = 1.0 * 2**(0.25), # readout noise (e-) # squared sum for the 2x1 binning
+                               dcurrent = 1.0 * 2, # dark current (e-/pixel/h) # sum for the 2x1 binning   
                                )
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
@@ -166,7 +166,7 @@ class WST(ETC):
             get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
 
             
-        # --------- MOS-HR 4 channels ------------- # We use catadioptric
+        # --------- MOS-HR 4 channels ------------- # We use dioptric values
         self.moshr = {} 
         self.moshr['channels'] = ['blue', 'green', 'yellow', 'red']       
         # MOS-HR blue channel 
@@ -180,8 +180,8 @@ class WST(ETC):
                                 spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
                                 dlbda = 0.027, # Angstroem/pixel, updated on 03/03/2026
-                                lbda1 = 3700, # starting wavelength in Angstroem **same as Olga's throughput
-                                lbda2 = 4090, # end wavelength in Angstroem **same as Olga's throughput
+                                lbda1 = 4009, # starting wavelength in Angstroem **same as Olga's throughput
+                                lbda2 = 4431, # end wavelength in Angstroem **same as Olga's throughput
                                 lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                                
@@ -200,8 +200,8 @@ class WST(ETC):
                                 spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
                                 dlbda = 0.032, # Angstroem/pixel, updated on 03/03/2026
-                                lbda1 = 4270, # starting wavelength in Angstroem **same as Olga's throughput
-                                lbda2 = 4720, # end wavelength in Angstroem **same as Olga's throughput
+                                lbda1 = 4522, # starting wavelength in Angstroem **same as Olga's throughput
+                                lbda2 = 4998, # end wavelength in Angstroem **same as Olga's throughput
                                 lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                                
@@ -220,8 +220,8 @@ class WST(ETC):
                                 spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
                                 dlbda = 0.043, # Angstroem/pixel, updated on 03/03/2026
-                                lbda1 = 5890, # starting wavelength in Angstroem  **same as Olga's throughput
-                                lbda2 = 6510, # end wavelength in Angstroem  **same as Olga's throughput
+                                lbda1 = 5424.5, # starting wavelength in Angstroem  **same as Olga's throughput
+                                lbda2 = 5995.5, # end wavelength in Angstroem  **same as Olga's throughput
                                 lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                              
@@ -240,8 +240,8 @@ class WST(ETC):
                                 spaxel_size = 0.0925, # spaxel size in arcsec, updated on 03/03/2026
                                 aperture = 1.00, # fiber diameter in arcsec
                                 dlbda = 0.048, # Angstroem/pixel, updated on 03/03/2026
-                                lbda1 = 6650, # starting wavelength in Angstroem **same as Olga's throughput
-                                lbda2 = 7350, # end wavelength in Angstroem **same as Olga's throughput
+                                lbda1 = 6080, # starting wavelength in Angstroem **same as Olga's throughput
+                                lbda2 = 6720, # end wavelength in Angstroem **same as Olga's throughput
                                 lsfpix = 3.6, # LSF in spectel, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                        
@@ -268,6 +268,8 @@ class WST(ETC):
 # 26/02/2026: updated MOS-LR with new values from the document, added yellow channel, updated version number, added data files with all the new throughput curves
 # we still miss the other quantities for the yellow channel, are they changed for the other channels? we just copied green
 # Diop throughput not taken into account, for now just the cata
+
+# 09/03/2026: updated IFS with new CMOS binning values and the MOS-HR with the dioptric values
 # # # # # # # # # # # # # # #
 
                 
@@ -277,4 +279,3 @@ class WST(ETC):
                
         
         
-

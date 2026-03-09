@@ -32,9 +32,6 @@ filter_manager = FilterManager(phot_system)
 C_cgs = constants.c.cgs.value
 H_cgs = constants.h.cgs.value
 
-# number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR
-trace_pixel_width = 8
-
 # tolerance to check for wavelength range
 tol_wave = 2
 
@@ -882,7 +879,10 @@ class ETC:
             snr_peak = source_ph_peak / tot_noise_peak
 
             source_ph_square = source_ph_peak * obs['ima_coadd']**2
+            #tot_noise_square = np.sqrt(source_ph_square + obs['ima_coadd']**2 * (sky_ph_spaxel + dark_spaxel) + ron_spaxel * obs['ima_coadd']) #! ! ! check
             tot_noise_square = tot_noise_peak * obs['ima_coadd']
+            
+            #snr_square = source_ph_square / tot_noise_square
             snr_square = snr_peak * obs['ima_coadd']
 
         elif obs['ima_type'] in ['ps', 'resolved']:
@@ -920,7 +920,7 @@ class ETC:
             snr_peak = source_ph_peak / tot_noise_peak
 
             source_ph_square = factor_source * frac_square_full
-            tot_noise_square = np.sqrt(source_ph_square + obs['ima_coadd']**2 * (sky_ph_spaxel + dark_spaxel + ron_spaxel))
+            tot_noise_square = np.sqrt(source_ph_square + obs['ima_coadd']**2 * (sky_ph_spaxel + dark_spaxel+ ron_spaxel))
             snr_square = source_ph_square / tot_noise_square
 
         frac_source_peak = source_ph_peak / tot_noise_peak**2
@@ -1108,11 +1108,15 @@ class ETC:
         # 1/(num_trace * trace_pixel_width) of the total counts                                #
         # # # # # # # # # # # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         
-        # we get the slicing only for the moshr
+        # we get the slicing only for the moshr ! ! ! put this in a dictionary as slicing/splitting parameter
         if ins['name'] == 'moslr':
             num_trace = 1
+            
         elif ins['name'] == 'moshr':
             num_trace = 7
+
+        # number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR
+        trace_pixel_width = int(np.ceil(ins['lsfpix']))
 
         dl = spec.wave.get_step(unit='Angstrom')
         a = (wave*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
@@ -1655,6 +1659,9 @@ class ETC:
         elif ins['name'] == 'moshr':
             num_trace = 7
 
+        # number of vertical pixels needed to fully extract each trace in MOS HR and MOS LR
+        trace_pixel_width = int(np.ceil(ins['lsfpix']))
+        
         dark = ins['dcurrent'] / 3600 * num_trace * trace_pixel_width
         ron = ins['ron']**2 * num_trace * trace_pixel_width
 
