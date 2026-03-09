@@ -200,9 +200,9 @@ update in future version
 
 ## Version
 
-### 2.0:
-- Added the new throughput curves, MOSLR and MOSHR now have both 4 channels (Blue, Green, Yellow, Red)
- 
+### 1.0:
+- Official release 09/03/2026
+  
 ## Contact
 
 Matteo Ferro - [matteo.ferro@inaf.it]
