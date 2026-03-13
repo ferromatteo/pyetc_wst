@@ -53,16 +53,6 @@ pip uninstall pyetc_wst
 pip install git+https://github.com/ferromatteo/pyetc_wst.git
 ```
 
-### For Development
-
-Clone the repository and install in editable mode:
-
-```bash
-git clone https://github.com/ferromatteo/pyetc_wst.git
-cd pyetc_wst
-pip install -e .
-```
-
 ## Quick Start
 
 ```python
