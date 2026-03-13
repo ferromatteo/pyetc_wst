@@ -29,7 +29,12 @@ pip install "numpy>=1.20.0" "scipy>=1.7.0" "matplotlib>=3.3.0" "astropy>=5.0.0" 
 
 ### From GitHub
 
-You can install directly from GitHub using pip:
+You can install directly from GitHub using pip. Beware that two version of the code are available:
+
+- main
+- survey
+
+Survey mode allows to significantly reduce computational time with minimal precision costs on the results, if you are interested in this kind of usage just add `@survey` at the end of every one of these commands (e.g. `pip install git+https://github.com/ferromatteo/pyetc_wst.git@survey`):
 
 ```bash
 pip install git+https://github.com/ferromatteo/pyetc_wst.git
