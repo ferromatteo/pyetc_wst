@@ -10,6 +10,8 @@ __author__ = "Matteo Ferro & Roland Bacon"
 
 # Changelog
 # v1.6 (2026-08-31)
+#   - Refactored get_data function: moved get_data as a @staticmethod inside
+#     class ETC with a module-level alias for full backward compatibility.
 #   - Restored saturation check parity in time_from_source across all compute
 #     modes (dit, ndit, best) for both IFS and MOS: dit_sat and flag_sat are
 #     now computed and returned, and saturation warnings are logged.
