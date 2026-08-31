@@ -5,10 +5,18 @@ A Python package for exposure time calculation and signal-to-noise ratio estimat
 for the WST instrument suite (IFS, MOS-LR, MOS-HR).
 """
 
-__version__ = "1.5"
+__version__ = "1.6"
 __author__ = "Matteo Ferro & Roland Bacon"
 
 # Changelog
+# v1.6 (2026-08-31)
+#   - Restored saturation check parity in time_from_source across all compute
+#     modes (dit, ndit, best) for both IFS and MOS: dit_sat and flag_sat are
+#     now computed and returned, and saturation warnings are logged.
+#   - Web app: introduced fixed 90% object centering efficiency (CENTERING_EFF = 0.9)
+#     for all MOS channels to account for residual random fiber positioning offsets.
+#   - Web app UI: formatted saturation warning messages in computation debug
+#     logs with bold red text for enhanced visibility.
 # v1.5 (2026-06-22)
 #   - Fixed bug in _resolve_best_coadd_ifs: replaced sky-dominated metric
 #     (fsq / N) with the full SNR metric (fsq*S / sqrt(fsq*S + N^2*bg)),

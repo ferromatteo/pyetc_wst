@@ -1,3 +1,4 @@
+from astropy.modeling import functional_models
 import logging
 import os
 import glob
@@ -353,6 +354,77 @@ class ETC:
 
         return conf, obs, spec, ima, spec_input
 
+    @staticmethod
+    def get_data(obj, chan, name, skydir, transdir):
+        """ retrieve instrument data from the associated setup files
+
+        Parameters
+        ----------
+        obj : ETC class
+            instrument class (e.g. etc.ifs)
+        chan : str
+            channel name (eg 'red')
+        name : str
+            instrument name (eg 'ifs')
+        skydir : str
+            directory path where the sky fits file can be found
+        transdir : str
+            directory path where the transmission fits file can be found
+
+        """
+        ins = obj[chan]
+
+        # Sky emission and atmospheric transmission
+        flist = glob.glob(os.path.join(skydir,"*.fits"))
+        flist.sort()
+        ins['sky'] =[]
+        moons = []
+        for fname in flist:
+            f = os.path.basename(fname).split('_')
+            moon = f[0]
+            moons.append(moon)
+            airmass = float(f[1])
+            pwv = float(f[2][:-5])
+            d = dict(moon=moon, airmass=airmass, pwv=pwv)
+
+            tab = Table.read(fname, unit_parse_strict="silent")
+
+            start = tab['lam'][0]*10
+            step = (tab['lam'][1]-tab['lam'][0])*10
+            wave = WaveCoord(cdelt=step, crval=start, cunit=u.angstrom)
+
+            d_emi = Spectrum(data=tab['flux'], wave=wave)
+            d_abs = Spectrum(data=tab['trans'], wave=wave)
+
+            d['emi'] = d_emi.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
+            d['abs'] = d_abs.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
+            ins['sky'].append(d)
+        
+        # all the transmission curves
+        filename = glob.glob(os.path.join(transdir,f'{name}_{chan}_noatm.fits'))[0]
+        trans=Table.read(os.path.join(transdir,filename), unit_parse_strict="silent")
+        
+        # # # Not needed anymore from Olga's throughput files
+        # We compute the total transmision (excluded atmosphere)
+        #cc = trans.colnames[1:-1] 
+        #all = np.prod([trans[c] for c in cc], axis=0)
+        #trans['trans'] = all
+
+        # We compute the instrument only transmission (exluded CCD and telescope, all the other columns)
+        trans['only_inst'] = trans['total'] / (trans['detector_QE'] * trans['telescope'])
+
+        ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['total']),  wave=ins['sky'][0]['emi'].wave)
+        ins['telescope'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['telescope']),  wave=ins['sky'][0]['emi'].wave)
+        ins['QE'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['detector_QE']),  wave=ins['sky'][0]['emi'].wave)
+        ins['total_instrumental'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['only_inst']),  wave=ins['sky'][0]['emi'].wave)
+
+        ins['skys'] = list(set(moons))
+        ins['wave'] = ins['instrans'].wave
+        ins['chan'] = chan
+        ins['name'] = name
+        ins['advice'] = 'Beware if you change the static sky files and/or transmission curves, even by a little marging, it is good to have in the files: lambda1_sky < lambda1_trans < lambda1_config, same for dlambda and opposite for lambda2 (they are all trimmed and resampled according to the configuration dictionary, this is done in order to avoid edges problems)'
+        return
+        
     def get_sky(self, obs=None):
         """
         Return sky emission and transmission spectra.
@@ -2291,10 +2363,19 @@ class ETC:
             roots = np.roots([A, B, C])
             ditv = roots[np.isreal(roots) & (roots > 0)].real[0]
 
+            # saturation check: compute the max-DIT that avoids saturation
+            counts_sat = source_ph_peak.data + sky_ph_spaxel.data
+            dit_sat = threshold_sat / max(counts_sat)
+            flag_sat = bool(ditv > dit_sat)
             if debug:
+                self.logger.debug(f"Maximum DIT to avoid saturation: {dit_sat} seconds")
+                if flag_sat:
+                    self.logger.debug(f"WARNING: computed DIT ({ditv:.2f} s) exceeds saturation limit ({dit_sat:.2f} s)")
                 self.logger.debug(f"Computed DIT: {ditv} seconds for NDIT: {nditv} to achieve SNR: {snrv} at wavelength: {wave_snr} AA (nearest to requested SNR wavelength: {obs['snr_wave']} AA), with spectral rebinning factor: {obs['spbin']}")
                 self.logger.debug(f"Overriding DIT in the observation dictionary...")
             res['dit'] = ditv
+            res['dit_sat'] = dit_sat
+            res['flag_sat'] = flag_sat
             obs['dit'] = ditv
         
         elif compute == 'ndit':
@@ -2331,10 +2412,19 @@ class ETC:
 
             nditv = snrv**2 * (sv + skyv + darkv + ronv / ditv) / (sv**2 * ditv)
 
+            # saturation check: compute the max-DIT that avoids saturation
+            counts_sat = source_ph_peak.data + sky_ph_spaxel.data
+            dit_sat = threshold_sat / max(counts_sat)
+            flag_sat = bool(ditv > dit_sat)
             if debug:
+                self.logger.debug(f"Maximum DIT to avoid saturation: {dit_sat} seconds")
+                if flag_sat:
+                    self.logger.debug(f"WARNING: computed DIT ({ditv:.2f} s) exceeds saturation limit ({dit_sat:.2f} s)")
                 self.logger.debug(f"Computed NDIT: {nditv} exposures for DIT: {ditv} to achieve SNR: {snrv} at wavelength: {wave_snr} AA (nearest to requested SNR wavelength: {obs['snr_wave']} AA), with spectral rebinning factor: {obs['spbin']}")
                 self.logger.debug(f"Overriding NDIT in the observation dictionary...")
             res['ndit'] = nditv
+            res['dit_sat'] = dit_sat
+            res['flag_sat'] = flag_sat
             obs['ndit'] = nditv
 
         elif compute == 'best':
@@ -2577,10 +2667,19 @@ class ETC:
             roots = np.roots([A, B, C])
             ditv = roots[np.isreal(roots) & (roots > 0)].real[0]
 
+            # saturation check: compute the max-DIT that avoids saturation
+            counts_sat = (source_ph_aperture.data + sky_ph_aperture.data) / (num_trace * trace_pixel_width)
+            dit_sat = threshold_sat / max(counts_sat)
+            flag_sat = bool(ditv > dit_sat)
             if debug:
+                self.logger.debug(f"Maximum DIT to avoid saturation: {dit_sat} seconds")
+                if flag_sat:
+                    self.logger.debug(f"WARNING: computed DIT ({ditv:.2f} s) exceeds saturation limit ({dit_sat:.2f} s)")
                 self.logger.debug(f"Computed DIT: {ditv} seconds for NDIT: {nditv} to achieve SNR: {snrv} at wavelength: {wave_snr} AA (nearest to requested SNR wavelength: {obs['snr_wave']} AA), with spectral rebinning factor: {obs['spbin']}")
                 self.logger.debug(f"Overriding DIT in the observation dictionary...")
             res['dit'] = ditv
+            res['dit_sat'] = dit_sat
+            res['flag_sat'] = flag_sat
             obs['dit'] = ditv
 
         elif compute == 'ndit':
@@ -2617,12 +2716,21 @@ class ETC:
 
             nditv = snrv**2 * (sv + skyv + darkv + ronv / ditv) / (sv**2 * ditv)
 
+            # saturation check: compute the max-DIT that avoids saturation
+            counts_sat = (source_ph_aperture.data + sky_ph_aperture.data) / (num_trace * trace_pixel_width)
+            dit_sat = threshold_sat / max(counts_sat)
+            flag_sat = bool(ditv > dit_sat)
             if debug:
+                self.logger.debug(f"Maximum DIT to avoid saturation: {dit_sat} seconds")
+                if flag_sat:
+                    self.logger.debug(f"WARNING: computed DIT ({ditv:.2f} s) exceeds saturation limit ({dit_sat:.2f} s)")
                 self.logger.debug(f"Computed NDIT: {nditv} exposures for DIT: {ditv} to achieve SNR: {snrv} at wavelength: {wave_snr} AA (nearest to requested SNR wavelength: {obs['snr_wave']} AA), with spectral rebinning factor: {obs['spbin']}")
                 self.logger.debug(f"Overriding NDIT in the observation dictionary...")
             res['ndit'] = nditv
+            res['dit_sat'] = dit_sat
+            res['flag_sat'] = flag_sat
             obs['ndit'] = nditv
-        
+
         elif compute == 'best':
             _checkobs(self.obs, keys=['snr', 'snr_wave'])
             snrv = obs['snr']
@@ -2906,77 +3014,6 @@ def snr_in_window(res, lam1, lam2, dlbda=None, unit='pixel', stat='median'):
         return float(np.nanmean(vals))
     else:
         raise ValueError(f"stat must be 'median' or 'mean', got '{stat}'")
-
-
-def get_data(obj, chan, name, skydir, transdir):
-    """ retrieve instrument data from the associated setup files
-
-    Parameters
-    ----------
-    obj : ETC class
-        instrument class (e.g. etc.ifs)
-    chan : str
-        channel name (eg 'red')
-    name : str
-        instrument name (eg 'ifs')
-    skydir : str
-        directory path where the sky fits file can be found
-    transdir : str
-        directory path where the transmission fits file can be found
-
-    """
-    ins = obj[chan]
-
-    # Sky emission and atmospheric transmission
-    flist = glob.glob(os.path.join(skydir,"*.fits"))
-    flist.sort()
-    ins['sky'] =[]
-    moons = []
-    for fname in flist:
-        f = os.path.basename(fname).split('_')
-        moon = f[0]
-        moons.append(moon)
-        airmass = float(f[1])
-        pwv = float(f[2][:-5])
-        d = dict(moon=moon, airmass=airmass, pwv=pwv)
-
-        tab = Table.read(fname, unit_parse_strict="silent")
-
-        start = tab['lam'][0]*10
-        step = (tab['lam'][1]-tab['lam'][0])*10
-        wave = WaveCoord(cdelt=step, crval=start, cunit=u.angstrom)
-
-        d_emi = Spectrum(data=tab['flux'], wave=wave)
-        d_abs = Spectrum(data=tab['trans'], wave=wave)
-
-        d['emi'] = d_emi.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
-        d['abs'] = d_abs.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
-        ins['sky'].append(d)
-    
-    # all the transmission curves
-    filename = glob.glob(os.path.join(transdir,f'{name}_{chan}_noatm.fits'))[0]
-    trans=Table.read(os.path.join(transdir,filename), unit_parse_strict="silent")
-    
-    # # # Not needed anymore from Olga's throughput files
-    # We compute the total transmision (excluded atmosphere)
-    #cc = trans.colnames[1:-1] 
-    #all = np.prod([trans[c] for c in cc], axis=0)
-    #trans['trans'] = all
-
-    # We compute the instrument only transmission (exluded CCD and telescope, all the other columns)
-    trans['only_inst'] = trans['total'] / (trans['detector_QE'] * trans['telescope'])
-
-    ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['total']),  wave=ins['sky'][0]['emi'].wave)
-    ins['telescope'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['telescope']),  wave=ins['sky'][0]['emi'].wave)
-    ins['QE'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['detector_QE']),  wave=ins['sky'][0]['emi'].wave)
-    ins['total_instrumental'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['only_inst']),  wave=ins['sky'][0]['emi'].wave)
-
-    ins['skys'] = list(set(moons))
-    ins['wave'] = ins['instrans'].wave
-    ins['chan'] = chan
-    ins['name'] = name
-    ins['advice'] = 'Beware if you change the static sky files and/or transmission curves, even by a little marging, it is good to have in the files: lambda1_sky < lambda1_trans < lambda1_config, same for dlambda and opposite for lambda2 (they are all trimmed and resampled according to the configuration dictionary, this is done in order to avoid edges problems)'
-    return
 
 # # # image generation functions # # #
 
@@ -3362,6 +3399,9 @@ def simulate_counts_vectorized(npix, source_arr, sky_arr, dark, RON, seed=None):
     noisy_counts = poisson_counts + ron_noise
     total_counts = noisy_counts.sum(axis=1)
     return total_counts
+
+# Alias to maintain retro comp.
+get_data = ETC.get_data
 
 # # # # # # # # # # # # # # # #
 

@@ -32,8 +32,19 @@ class WST(ETC):
         self.throughput_model_version = '09/03/2026'
         self.release_info = {
             'version': PACKAGE_VERSION,
-            'release_date': '22 June 2026',
+            'release_date': '31 August 2026',
             'history': [
+                {
+                    'version': '1.6',
+                    'label': 'Version 1.6',
+                    'release_date': '31 August 2026',
+                    'changes': [
+                        'Refactored get_data function: moved get_data as a @staticmethod inside class ETC, maintaining a top-level module alias for full backward compatibility.',
+                        'Restored saturation check parity in time_from_source across all compute modes (dit, ndit, best) for both IFS and MOS instruments: dit_sat and flag_sat are now computed and returned, and saturation warnings are properly logged.',
+                        'Web Interface: implemented fixed 0.9 object centering efficiency (CENTERING_EFF = 0.9) for all MOS channels to account for residual random fiber positioning offsets.',
+                        'Web Interface: styled saturation warning messages in computation debug logs with bold red text for improved visibility.',
+                    ],
+                },
                 {
                     'version': '1.5',
                     'label': 'Version 1.5',
