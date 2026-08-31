@@ -222,6 +222,12 @@ update in future version
 
 ## Version
 
+### 1.6 — 31 August 2026
+- **Refactored `get_data` into `ETC` class**: moved `get_data` as a `@staticmethod` inside `class ETC` with a module-level alias `get_data = ETC.get_data` for full backward compatibility.
+- **Restored saturation check parity in `time_from_source`**: added saturation evaluation (`dit_sat`, `flag_sat`, and warning logs) to all `dit` and `ndit` compute branches for both IFS and MOS instrument models.
+- **Web interface — 90% object centering efficiency**: implemented a fixed centering efficiency (`CENTERING_EFF = 0.9`) for all MOS channels to account for residual random fiber positioning offsets.
+- **Web interface — styled saturation warnings**: saturation warning messages in computation debug logs are now styled with bold red text for improved visibility.
+
 ### 1.5 — 22 June 2026
 - **Fixed bug in `_resolve_best_coadd_ifs`** (`COADD_XY='best'` mode): replaced the sky-dominated approximation metric `fsq / N` with the correct full SNR metric `signal / sqrt(signal + N² · bg_per_spaxel)`, where `signal = fsq · S` and `bg_per_spaxel = sky + dark + RON` per spaxel at the reference wavelength. The source spectrum is now passed from all three callers (`snr_from_source_ifs`, `_snr_at_wave_ifs`, `time_from_source_ifs`); when no spectrum is available the old approximation is used as fallback.
 - **Increased default `max_coadd` from 20 to 40** for point sources: bad seeing conditions (e.g. 1.5–2″) with small spaxels can push the optimal aperture close to or beyond the old cap.
