@@ -205,9 +205,11 @@ plot_noise_components(res_snr['spec']['noise'])
 ```
 ![Noise Plot](images/noise.png)
 
-## Notebook
+## Notebooks
 `WST_LimMag.ipynb`: computes the limiting magnitude of the WST Integral Field Spectrograph (IFS) as a function of wavelength, for both point sources and extended sources (surface brightness), across the blue and red channels.
 For a given target S/N ratio, the notebook sweeps the wavelength range and finds — via Brent's root-finding method — the faintest AB magnitude detectable under three sky background conditions: dark, grey, and bright time.
+
+`pyetc_wst_quick_look.ipynb`: provides a guided introduction to the WST Exposure Time Calculator. It shows how to inspect the available instruments, build observation dictionaries, create source spectra and spatial models, compute S/N and exposure times, and explore options such as spatial coaddition, GLAO, and spectral rebinning. The notebook also demonstrates how to inspect, plot, and interpret ETC results, including S/N spectra, source and sky counts, noise components, throughput curves, and products returned by the web API.
 
 
 ## Documentation
