@@ -217,7 +217,9 @@ plot_noise_components(res_snr['spec']['noise'])
 ![Noise Plot](images/noise.png)
 
 ## Notebook
-`pyetc_wst_quick_look.ipynb` is a guided introduction to the main `pyetc_wst` workflow. It shows how to initialize the `WST` exposure-time calculator, inspect the available instruments and channels, build a complete observation dictionary, and generate calibrated source spectra and spatial models.
+### `pyetc_wst_quick_look.ipynb`
+
+This notebook is a guided introduction to the main `pyetc_wst` workflow. It shows how to initialize the `WST` exposure-time calculator, inspect the available instruments and channels, build a complete observation dictionary, and generate calibrated source spectra and spatial models.
 
 The notebook demonstrates how to:
 - compute full SNR spectra and SNR at a selected wavelength;
