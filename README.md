@@ -217,8 +217,15 @@ plot_noise_components(res_snr['spec']['noise'])
 ![Noise Plot](images/noise.png)
 
 ## Notebook
-`WST_LimMag.ipynb`: computes the limiting magnitude of the WST Integral Field Spectrograph (IFS) as a function of wavelength, for both point sources and extended sources (surface brightness), across the blue and red channels.
-For a given target S/N ratio, the notebook sweeps the wavelength range and finds — via Brent's root-finding method — the faintest AB magnitude detectable under three sky background conditions: dark, grey, and bright time.
+`WST_LimMag.ipynb` computes wavelength-dependent sensitivity limits for the WST instruments. For a given exposure time, number of exposures, target S/N, observing conditions, and spectral coadd, it uses Brent's root-finding method (`scipy.optimize.brentq`) to determine the limiting source brightness.
+
+The notebook includes:
+- IFS limiting AB magnitude for point sources in the blue and red channels;
+- IFS limiting surface-brightness magnitude for extended sources;
+- IFS limiting emission-line flux;
+- MOS-LR and MOS-HR limiting AB magnitudes for point sources across their available channels.
+
+The calculations are repeated for dark, grey, and bright time, and account for the selected seeing or GLAO configuration, spectral resolution, spatial coaddition, and instrument version. The notebook produces wavelength-dependent plots and exports the results as dated JPEG and JSON files.
 
 
 ## Documentation
