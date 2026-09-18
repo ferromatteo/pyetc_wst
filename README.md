@@ -59,8 +59,10 @@ pip install git+https://github.com/ferromatteo/pyetc_wst.git
 from pyetc_wst import WST
 
 # Initialize the ETC, 'DEBUG' will allow you to see useful prints during the computation,
-# skip_dataload = False will load the static sky configurations + general transmissions
-wst = WST(log = 'DEBUG', skip_dataload = False)
+# skip_dataload = False will load the static sky configurations + general transmissions.
+# throughput_system selects the transmission set; omitted/None defaults to AR.
+wst = WST(log = 'DEBUG', skip_dataload = False, throughput_system = 'AR')
+# Use throughput_system = 'GRINAR' to load the alternative transmission set.
 
 # Display instrument information
 wst.info()
@@ -161,6 +163,15 @@ full_obs = {
     "LAM_WIN2": 6000,    # window end in Å
 }
 ```
+
+The throughput system is selected when initializing `WST`:
+
+```python
+WST(throughput_system='AR')      # default when omitted or set to None
+WST(throughput_system='GRINAR')
+```
+
+Only `AR` and `GRINAR` are valid values; any other value raises `ValueError`.
 **NOTE**: *"COADD_XY": 'best' — automatically selects the spatial coadding that maximizes the SNR. Like the compute options in `time_from_source`, it updates "COADD_XY" in the obs dictionary with the chosen value.*
 
 **NOTE (3)**: *`"SNR_RANGE": True` — when set, `time_from_source` targets the median SNR over the wavelength window `[LAM_WIN1, LAM_WIN2]` instead of the SNR at `Lam_Ref`. Works for `compute='dit'`, `'ndit'`, and `'best'` (which internally uses `'ndit'`). Line sources (`Obj_SED='line'`) always use their line-center wavelength and ignore this flag. The window is automatically clipped to the instrument spectral range if it extends beyond it.*
@@ -205,11 +216,9 @@ plot_noise_components(res_snr['spec']['noise'])
 ```
 ![Noise Plot](images/noise.png)
 
-## Notebooks
+## Notebook
 `WST_LimMag.ipynb`: computes the limiting magnitude of the WST Integral Field Spectrograph (IFS) as a function of wavelength, for both point sources and extended sources (surface brightness), across the blue and red channels.
 For a given target S/N ratio, the notebook sweeps the wavelength range and finds — via Brent's root-finding method — the faintest AB magnitude detectable under three sky background conditions: dark, grey, and bright time.
-
-`pyetc_wst_quick_look.ipynb`: provides a guided introduction to the WST Exposure Time Calculator. It shows how to inspect the available instruments, build observation dictionaries, create source spectra and spatial models, compute S/N and exposure times, and explore options such as spatial coaddition, GLAO, and spectral rebinning. The notebook also demonstrates how to inspect, plot, and interpret ETC results, including S/N spectra, source and sky counts, noise components, throughput curves, and products returned by the web API.
 
 
 ## Documentation
@@ -223,6 +232,10 @@ This package has been developed from the original `pyetc` package available at h
 update in future version
 
 ## Version
+
+### 1.7 — 17 September 2026
+- Updated IFS and MOS-LR wavelength ranges and transmission curves with the latest values from the WST system engineer.
+- Added selectable AR and GRINAR transmission systems through `WST(throughput_system=...)`; the default is AR.
 
 ### 1.6 — 31 August 2026
 - **Refactored `get_data` into `ETC` class**: moved `get_data` as a `@staticmethod` inside `class ETC` with a module-level alias `get_data = ETC.get_data` for full backward compatibility.

@@ -1,3 +1,12 @@
+# # # PARAMETERS FOR THE WST CONSTRUCTOR
+
+"throughput_system" (str, optional, default "AR"):
+- pass this as a keyword argument to WST(...), not inside full_obs
+- "AR" - use the transmission files in data/wst/AR
+- "GRINAR" - use the transmission files in data/wst/GRINAR
+- if omitted or set to None, "AR" is used
+- any other value raises ValueError; valid values are "AR", "GRINAR", or not specified
+
 # # # LIST OF PARAMETERS FOR THE full_obs DICTIONARY, and the related ranges/possible values
 
 "INS" (str):
