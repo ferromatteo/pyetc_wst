@@ -217,6 +217,17 @@ plot_noise_components(res_snr['spec']['noise'])
 ![Noise Plot](images/noise.png)
 
 ## Notebook
+`pyetc_wst_quick_look.ipynb` is a guided introduction to the main `pyetc_wst` workflow. It shows how to initialize the `WST` exposure-time calculator, inspect the available instruments and channels, build a complete observation dictionary, and generate calibrated source spectra and spatial models.
+
+The notebook demonstrates how to:
+- compute full SNR spectra and SNR at a selected wavelength;
+- calculate DIT, NDIT, and best exposure-time solutions;
+- target the median SNR over a wavelength window;
+- optimize and compare spatial coaddition for IFS observations;
+- model resolved sources, surface brightness, and GLAO observations;
+- inspect source, sky, dark-current, and read-out noise contributions;
+- load and plot result dictionaries returned by the web API.
+
 `WST_LimMag.ipynb` computes wavelength-dependent sensitivity limits for the WST instruments. For a given exposure time, number of exposures, target S/N, observing conditions, and spectral coadd, it uses Brent's root-finding method (`scipy.optimize.brentq`) to determine the limiting source brightness.
 
 The notebook includes:
