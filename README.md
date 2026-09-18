@@ -230,7 +230,9 @@ The notebook demonstrates how to:
 - inspect source, sky, dark-current, and read-out noise contributions;
 - load and plot result dictionaries returned by the web API.
 
-`WST_LimMag.ipynb` computes wavelength-dependent sensitivity limits for the WST instruments. For a given exposure time, number of exposures, target S/N, observing conditions, and spectral coadd, it uses Brent's root-finding method (`scipy.optimize.brentq`) to determine the limiting source brightness.
+### `WST_LimMag.ipynb`
+
+This notebook computes wavelength-dependent sensitivity limits for the WST instruments. For a given exposure time, number of exposures, target S/N, observing conditions, and spectral coadd, it uses Brent's root-finding method (`scipy.optimize.brentq`) to determine the limiting source brightness.
 
 The notebook includes:
 - IFS limiting AB magnitude for point sources in the blue and red channels;
