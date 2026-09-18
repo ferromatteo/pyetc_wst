@@ -19,21 +19,41 @@ WSTDIR = CURDIR + '/wst'
 
 class WST(ETC):
     
-    def __init__(self, log=logging.INFO, skip_dataload=False):
+    def __init__(self, log=logging.INFO, skip_dataload=False, throughput_system=None):
         start_time = time.time()
         self.refdir = CURDIR
         setup_logging(__name__, level=log, stream=sys.stdout)
         self.logger = logging.getLogger(__name__)
         self.logger.propagate = False
+
+        if throughput_system is None:
+            throughput_system = 'AR'
+        else:
+            throughput_system = str(throughput_system).upper()
+        if throughput_system not in ('AR', 'GRINAR'):
+            raise ValueError(
+                "throughput_system must be 'AR', 'GRINAR', or not specified"
+            )
+        self.throughput_system = throughput_system
+        self.throughput_dir = os.path.join(WSTDIR, throughput_system)
         
         # ------ Telescope ---------
         self.name = 'WST'
-        self.throughput_model_desc = 'Throughput model version 1 delivered by Olga Bellido, date 09/03/2026'
-        self.throughput_model_version = '09/03/2026'
+        self.throughput_model_desc = 'Throughput model version 2 delivered by Olga Bellido, date 17/09/2026'
+        self.throughput_model_version = '17/09/2026'
         self.release_info = {
             'version': PACKAGE_VERSION,
-            'release_date': '31 August 2026',
+            'release_date': '17 September 2026',
             'history': [
+                {
+                    'version': '1.7',
+                    'label': 'Version 1.7',
+                    'release_date': '17 September 2026',
+                    'changes': [
+                        'Updated MOS-LR & IFS wavelength ranges & tranmission curves with the latest values from the system engineer (Olga Bellido) from version 1 (09/03/2026) to version 2.',
+                        'Added the possibility to choose between the two transmission systems as an option in the WST constructor (throughput_system="AR" or "GRINAR"), defaulting to "AR".',
+                    ],
+                },
                 {
                     'version': '1.6',
                     'label': 'Version 1.6',
@@ -158,14 +178,14 @@ class WST(ETC):
                               iq_beta = 2.80, # beta PSF of telescope + instrument (non-AO Moffat)
                               spaxel_size = 0.25, # spaxel size in arcsec ( * * * check for the binning 2x1, could be 0.125)
                               dlbda = 0.48, # Angstroem/pixel, previously 0.5, updated on 03/03/2026
-                              lbda1 = 3700, # starting wavelength in Angstroem
-                              lbda2 = 6400, # end wavelength in Angstroem
+                              lbda1 = 3717, # starting wavelength in Angstroem
+                              lbda2 = 6382, # end wavelength in Angstroem
                               lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
                               ron = 1.0 * np.sqrt(2), # readout noise (e-) # squared sum for the 2x1 binning
                               dcurrent = 1.0 * 2, # dark current (e-/pixel/h) # sum for the 2x1 binning                                
                               )
         if not skip_dataload:
-            get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
+            get_data(self.ifs, chan, 'ifs', SKYDIR, self.throughput_dir)
 
         # IFS red channel
         chan = 'red'
@@ -177,14 +197,14 @@ class WST(ETC):
                                iq_beta = 2.80, # beta PSF of telescope + instrument (non-AO Moffat)
                                spaxel_size = 0.25, # spaxel size in arcsec ( * * * check for the binning 2x1, could be 0.125)
                                dlbda = 0.64, # Angstroem/pixel, previously 0.67, updated on 03/03/2026
-                               lbda1 = 6200, # starting wavelength in Angstroem
-                               lbda2 = 9800, # end wavelength in Angstroem
+                               lbda1 = 6217, # starting wavelength in Angstroem
+                               lbda2 = 9782, # end wavelength in Angstroem
                                lsfpix = 2.5, # LSF in spectel, previously 3.0, updated on 03/03/2026 ( * * * check)
                                ron = 1.0 * np.sqrt(2), # readout noise (e-) # squared sum for the 2x1 binning
                                dcurrent = 1.0 * 2, # dark current (e-/pixel/h) # sum for the 2x1 binning   
                                )
         if not skip_dataload:
-            get_data(self.ifs, chan, 'ifs', SKYDIR, WSTDIR)
+            get_data(self.ifs, chan, 'ifs', SKYDIR, self.throughput_dir)
               
         # # --------- MOSLR-VIS 4 channels 6k CCD -------------
         
@@ -204,13 +224,13 @@ class WST(ETC):
                                 aperture = 1.03, # fiber diameter in arcsec 
                                 dlbda = 0.206, # Angstroem/pixel, previously 0.256, updated on 03/03/2026
                                 lbda1 = 3700, # starting wavelength in Angstroem **from Olga's throughput
-                                lbda2 = 4770, # end wavelength in Angstroem **from Olga's throughput
+                                lbda2 = 4860, # end wavelength in Angstroem **from Olga's throughput
                                 lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-) 
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                           
                                 )
         if not skip_dataload:
-            get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
+            get_data(self.moslr, chan, 'moslr', SKYDIR, self.throughput_dir)
             
         # MOS-LR green channel      
         chan = self.moslr['channels'][1] 
@@ -223,14 +243,14 @@ class WST(ETC):
                                 spaxel_size = 0.1515 , # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
                                 dlbda = 0.266, # Angstroem/pixel, previously 0.352, updated on 03/03/2026
-                                lbda1 = 4630, # starting wavelength in Angstroem **from Olga's throughput
-                                lbda2 = 6080, # end wavelength in Angstroem **from Olga's throughput
+                                lbda1 = 4690, # starting wavelength in Angstroem **from Olga's throughput
+                                lbda2 = 6150, # end wavelength in Angstroem **from Olga's throughput
                                 lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
+            get_data(self.moslr, chan, 'moslr', SKYDIR, self.throughput_dir)
 
         # MOS-LR yellow channel      
         chan = self.moslr['channels'][2] 
@@ -243,14 +263,14 @@ class WST(ETC):
                                 spaxel_size = 0.1515, # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
                                 dlbda = 0.344, # Angstroem/pixel, previously 0.352, updated on 03/03/2026
-                                lbda1 = 5920, # starting wavelength in Angstroem **from Olga's throughput
-                                lbda2 = 7710, # end wavelength in Angstroem **from Olga's throughput
+                                lbda1 = 5970, # starting wavelength in Angstroem **from Olga's throughput
+                                lbda2 = 7810, # end wavelength in Angstroem **from Olga's throughput
                                 lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                             
                                 )
         if not skip_dataload:
-            get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
+            get_data(self.moslr, chan, 'moslr', SKYDIR, self.throughput_dir)
 
         # MOS-LR red channel      
         chan = self.moslr['channels'][3] 
@@ -263,14 +283,14 @@ class WST(ETC):
                                 spaxel_size = 0.1515, # spaxel size in arcsec, previously 0.208, updated on 03/03/2026
                                 aperture = 1.03, # fiber diameter in arcsec
                                 dlbda = 0.362, # Angstroem/pixel, previously 0.486, updated on 03/03/2026
-                                lbda1 = 7490, # starting wavelength in Angstroem **from Olga's throughput
-                                lbda2 = 9800, # end wavelength in Angstroem **from Olga's throughput
+                                lbda1 = 7540, # starting wavelength in Angstroem **from Olga's throughput
+                                lbda2 = 9300, # end wavelength in Angstroem **from Olga's throughput
                                 lsfpix = 6.8, # LSF in spectel, previously 4.83, updated on 03/03/2026 ( * * * check)
                                 ron = 1.0, # readout noise (e-)
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                              
                                 )
         if not skip_dataload:
-            get_data(self.moslr, chan, 'moslr', SKYDIR, WSTDIR)
+            get_data(self.moslr, chan, 'moslr', SKYDIR, self.throughput_dir)
 
             
         # --------- MOS-HR 4 channels ------------- # We use dioptric values
@@ -294,7 +314,7 @@ class WST(ETC):
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
+            get_data(self.moshr, chan, 'moshr', SKYDIR, self.throughput_dir)
             
         # MOS-HR green channel 
         chan = self.moshr['channels'][1]
@@ -314,7 +334,7 @@ class WST(ETC):
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
+            get_data(self.moshr, chan, 'moshr', SKYDIR, self.throughput_dir)
 
         # MOS-HR V channel
         chan = self.moshr['channels'][2]
@@ -334,7 +354,7 @@ class WST(ETC):
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                              
                                 )
         if not skip_dataload:
-            get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
+            get_data(self.moshr, chan, 'moshr', SKYDIR, self.throughput_dir)
 
         # MOS-HR I channel
         chan = self.moshr['channels'][3]
@@ -354,7 +374,7 @@ class WST(ETC):
                                 dcurrent = 1.0, # dark current (e-/pixel/h)                        
                                 )
         if not skip_dataload:
-            get_data(self.moshr, chan, 'moshr', SKYDIR, WSTDIR)
+            get_data(self.moshr, chan, 'moshr', SKYDIR, self.throughput_dir)
         
         end_time = time.time()
         if log == logging.DEBUG or log == 'DEBUG':

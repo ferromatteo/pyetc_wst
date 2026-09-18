@@ -5,10 +5,13 @@ A Python package for exposure time calculation and signal-to-noise ratio estimat
 for the WST instrument suite (IFS, MOS-LR, MOS-HR).
 """
 
-__version__ = "1.6"
+__version__ = "1.7"
 __author__ = "Matteo Ferro & Roland Bacon"
 
 # Changelog
+# v1.7 (2026-09-17)
+#   - Updated MOS-LR & IFS wavelength ranges & transmission curves with the latest values from the system engineer (Olga Bellido) from version 1 (09/03/2026) to version 2.
+#   - Added the possibility to choose between the two transmission systems as an option in the WST constructor (throughput_system="AR" or "GRINAR"), defaulting to "AR".
 # v1.6 (2026-08-31)
 #   - Refactored get_data function: moved get_data as a @staticmethod inside
 #     class ETC with a module-level alias for full backward compatibility.
