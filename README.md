@@ -89,13 +89,16 @@ res_time = wst.time_from_source(con, im, spe, compute = 'dit'/'ndit'/'best', deb
 
 # --- SNR in a spectral window ---
 from pyetc_wst.etc import snr_in_window
-# Get median SNR in [5000, 6000] Å from a snr_from_source result
-med = snr_in_window(res_snr, lam1=5000, lam2=6000)
+# For a rebinned spectrum (COADD_WL/spbin > 1), evaluate the SNR in the same binned unit
+med = snr_in_window(res_snr, lam1=5000, lam2=6000, unit='bin')
+# Pixel mode remains available for unbinned spectra
+# med = snr_in_window(res_snr, lam1=5000, lam2=6000, unit='pixel')
 
 # --- Find NDIT for target median SNR in a window ---
 result = wst.time_from_source_window(con, im, spe,
                                      lam1=5000, lam2=6000,
                                      target_snr=10,
+                                     unit='bin',
                                      compute='ndit')
 print(f"Required NDIT: {result['ndit']}, achieved median SNR: {result['median_snr']:.2f}")
 # The full snr_from_source result is in result['res']
@@ -103,6 +106,8 @@ print(f"Required NDIT: {result['ndit']}, achieved median SNR: {result['median_sn
 `debug=True/False` allows to print detailed info of the current run.
 
 **NOTE**: *`time_from_source()` basically update the 'dit', 'ndit' or both values in the obs. dictionary to the value/values needed to reach a specific SNR at a specific wavelength, after it you could run a `res_snr = wst.snr_from_source(con, im, spe)` and plot the SNR to check the results.*
+
+**NOTE (binning)**: *When `COADD_WL`/`spbin` is greater than 1, the SNR target and the measured window SNR must be evaluated in the same rebinned unit. In that case the relevant quantity is the summed source counts in the bin divided by the quadrature sum of the total noise, not a per-pixel SNR divided by `sqrt(spbin)`. This is the default behavior of `SNR_RANGE=True` and `time_from_source_window(..., unit='bin')`.*
 
 A full_obs dictionary should look like this (detailed information are given in the file **encoding.txt**):
 ```python
@@ -176,7 +181,7 @@ Only `AR` and `GRINAR` are valid values; any other value raises `ValueError`.
 For MOS observations, `OBJ_FIB_DISP` is optional and defaults to `None`. When it is omitted or set to `None`, the core applies the 90% mean object-centering efficiency. If a non-negative displacement is provided, the core uses that value in the geometric fiber-aperture calculation without the additional 90% factor.
 **NOTE**: *"COADD_XY": 'best' — automatically selects the spatial coadding that maximizes the SNR. Like the compute options in `time_from_source`, it updates "COADD_XY" in the obs dictionary with the chosen value.*
 
-**NOTE (3)**: *`"SNR_RANGE": True` — when set, `time_from_source` targets the median SNR over the wavelength window `[LAM_WIN1, LAM_WIN2]` instead of the SNR at `Lam_Ref`. Works for `compute='dit'`, `'ndit'`, and `'best'` (which internally uses `'ndit'`). Line sources (`Obj_SED='line'`) always use their line-center wavelength and ignore this flag. The window is automatically clipped to the instrument spectral range if it extends beyond it.*
+**NOTE (3)**: *`"SNR_RANGE": True` — when set, `time_from_source` targets the median SNR over the wavelength window `[LAM_WIN1, LAM_WIN2]` instead of the SNR at `Lam_Ref`. Works for `compute='dit'`, `'ndit'`, and `'best'` (which internally uses `'ndit'`). Line sources (`Obj_SED='line'`) always use their line-center wavelength and ignore this flag. The window is automatically clipped to the instrument spectral range if it extends beyond it. When `COADD_WL`/`spbin > 1`, the target and the measurement are both evaluated in the binned SNR unit (`unit='bin'`), i.e. on summed source counts and quadrature-summed total noise per spectral bin.*
 
 **NOTE (2)**: *When using `"Obj_SED": "upload"`, you must provide `"UPLOAD_FILE": "/path/to/spectrum.dat"` pointing to a two-column ASCII file/FITS table (wavelength, flux). Optional comment headers (or "units" of the FITS columns) set units: `# nm` or `# aa` for wavelength (default: Å - `aa`), `# fl` or `# ph` for flux (default: erg/cm²/s/Å - `fl`). Set `"OBJ_MAG": null` to use the spectrum as-is, or set a numeric value (e.g. `18`) to normalize it to that magnitude in the chosen `MAG_FIL`/`MAG_SYS` band.*
 
@@ -256,6 +261,11 @@ This package has been developed from the original `pyetc` package available at h
 update in future version
 
 ## Version
+
+### 1.8 — 2 October 2026
+- **Fixed spectral-window SNR with spectral binning**: `SNR_RANGE=True` and `time_from_source_window(..., unit='bin')` now target and measure SNR in the same binned unit when `COADD_WL`/`spbin > 1`; the target is no longer adjusted by an ad hoc `sqrt(spbin)` factor.
+- **Added explicit pixel/bin SNR selection**: `snr_in_window` and `time_from_source_window` support `unit='pixel'` and `unit='bin'`. Pixel SNR is measured per spectral pixel; binned SNR uses summed source counts divided by the quadrature-summed total noise in each spectral bin.
+- **Clarified the web SNR plots**: the primary plot is labeled SNR per spectral pixel and the rebinned plot is labeled SNR per spectral bin.
 
 ### 1.7 — 21 September 2026
 - Updated IFS and MOS-LR wavelength ranges and transmission curves with the latest values from the WST system engineer.

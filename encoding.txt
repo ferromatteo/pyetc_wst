@@ -24,8 +24,16 @@
 "DIT" (float/int, positive) - TIME IN SECONDS OF ONE EXPOSURE
 
 "SNR" (float/int, positive) - SNR, AT A SPECIFIC WAVE
+- if the observation is rebinned (COADD_WL/spbin > 1), the SNR is interpreted in the same unit used in the calculation; for windowed targets the relevant metric is the binned SNR, not a per-pixel SNR rescaled by sqrt(spbin)
 
 "Lam_Ref" (float/int, positive) - REFERENCE WAVE WHEN SNR IS GIVEN
+
+"SNR_RANGE" (bool, optional, default False) - ENABLE WINDOW-BASED SNR TARGETING
+- when True, `time_from_source` targets the median SNR in the wavelength range `[LAM_WIN1, LAM_WIN2]` instead of at `Lam_Ref`
+- for spectral rebinning, the target is evaluated in the same rebinned-bin unit used by `snr_in_window(..., unit='bin')`
+
+"LAM_WIN1" / "LAM_WIN2" (float/int, positive) - START / END WAVELENGTHS OF THE SNR WINDOW IN ANGSTROM
+- these values are clipped to the instrument spectral range if they extend outside it
 
 Needed only for moshr/moslr    
 "OBJ_FIB_DISP": float/int or None (optional, default None) - OBJECT FIBER DISPLACEMENT, IN ARCSEC
