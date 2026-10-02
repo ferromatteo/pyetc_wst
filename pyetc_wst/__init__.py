@@ -5,10 +5,19 @@ A Python package for exposure time calculation and signal-to-noise ratio estimat
 for the WST instrument suite (IFS, MOS-LR, MOS-HR).
 """
 
-__version__ = "1.7"
+__version__ = "1.8"
 __author__ = "Matteo Ferro & Roland Bacon"
 
 # Changelog
+# v1.8 (2026-10-02)
+#   - Fixed the spectral-window SNR mismatch for rebinned spectra: when COADD_WL/spbin > 1,
+#     SNR_RANGE and time_from_source_window now evaluate the target and the achieved SNR in
+#     the same binned unit instead of applying an ad hoc sqrt(spbin) correction.
+#   - Added explicit unit-aware handling in snr_in_window and time_from_source_window:
+#     unit='pixel' keeps the per-pixel definition, while unit='bin' computes the summed-count
+#     SNR over each spectral bin using the quadratic sum of noise contributions.
+#   - Clarified the public documentation so the SNR target is consistently described as a
+#     binned-bin SNR whenever spectral rebinning is active, avoiding ambiguity in T1/T2/T3 reuse.
 # v1.7 (2026-09-21)
 #   - Updated MOS-LR & IFS wavelength ranges & transmission curves with the latest values from the system engineer (Olga Bellido) from version 1 (09/03/2026) to version 2.
 #   - Added the possibility to choose between the two transmission systems as an option in the WST constructor (throughput_system="AR" or "GRINAR"), defaulting to "AR".

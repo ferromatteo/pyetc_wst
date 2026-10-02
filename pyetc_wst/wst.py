@@ -43,8 +43,18 @@ class WST(ETC):
         self.throughput_model_version = '21/09/2026'
         self.release_info = {
             'version': PACKAGE_VERSION,
-            'release_date': '21 September 2026',
+            'release_date': '2 October 2026',
             'history': [
+                {
+                    'version': '1.8',
+                    'label': 'Version 1.8',
+                    'release_date': '2 October 2026',
+                    'changes': [
+                        'Fixed spectral-window SNR with spectral binning: SNR_RANGE=True and time_from_source_window(..., unit="bin") now target and measure SNR in the same binned unit when COADD_WL/spbin > 1; the target is no longer adjusted by an ad hoc sqrt(spbin) factor.',
+                        'Added explicit pixel/bin SNR selection: snr_in_window and time_from_source_window support unit="pixel" and unit="bin". Pixel SNR is measured per spectral pixel; binned SNR uses summed source counts divided by the quadrature-summed total noise in each spectral bin.',
+                        'Clarified the web SNR plots: the primary plot is labeled SNR per spectral pixel and the rebinned plot is labeled SNR per spectral bin.',
+                    ],
+                },
                 {
                     'version': '1.7',
                     'label': 'Version 1.7',

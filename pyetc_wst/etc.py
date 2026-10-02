@@ -2204,17 +2204,18 @@ class ETC:
             spbin = int(obs.get('spbin') or 1)
             if obs.get('snr') is None:
                 return {'message': 'SNR_RANGE=True but SNR target not set.'}
-            effective_snr = float(obs['snr']) / np.sqrt(spbin) if spbin > 1 else float(obs['snr'])
+            target_snr = float(obs['snr'])
+            snr_unit = 'bin' if spbin > 1 else 'pixel'
             if debug:
                 self.logger.debug(
                     f"SNR_RANGE mode: window=[{lam_w1:.0f}–{lam_w2:.0f} Å], "
-                    f"compute='{_compute}', target SNR={obs['snr']}, "
-                    f"spbin={spbin}, effective target={effective_snr:.4f}"
+                    f"compute='{_compute}', target SNR={target_snr}, "
+                    f"spbin={spbin}, unit='{snr_unit}'"
                 )
             try:
                 res = self.time_from_source_window(
-                    ins, ima, spec, lam_w1, lam_w2, effective_snr,
-                    compute=_compute, debug=debug
+                    ins, ima, spec, lam_w1, lam_w2, target_snr,
+                    unit=snr_unit, compute=_compute, debug=debug
                 )
             except (RuntimeError, ValueError, TypeError) as e:
                 return {'message': str(e)}
@@ -2869,7 +2870,9 @@ class ETC:
         target_snr : float
             Desired median SNR inside the window.
         unit : str
-            ``'pixel'`` — SNR per spectral pixel (default and only supported option).
+            ``'pixel'`` — SNR per spectral pixel.
+            ``'bin'`` — SNR of the rebinned spectral bins using the current
+            observation ``spbin``.
         compute : str
             ``'ndit'`` — fix DIT, find NDIT (default).
             ``'dit'``  — fix NDIT, find DIT.
@@ -2884,14 +2887,14 @@ class ETC:
             - ``'ndit'`` or ``'dit'``: the required value (int for NDIT, float for DIT)
             - ``'median_snr'``: achieved median SNR in the window
             - ``'lam1'``, ``'lam2'``: the wavelength window used
-            - ``'unit'``: SNR unit used (always ``'pixel'``)
+            - ``'unit'``: SNR unit used (``'pixel'`` or ``'bin'``)
             - ``'res'``: the full :meth:`snr_from_source` result for the final iteration
         """
         obs = self.obs
         dlbda = float(ins.get('dlbda', 1.0))
 
-        if unit != 'pixel':
-            raise ValueError("Only unit='pixel' is supported")
+        if unit not in ['pixel', 'bin']:
+            raise ValueError("unit must be 'pixel' or 'bin'")
 
         if compute == 'ndit':
             param_key = 'ndit'
@@ -2988,7 +2991,7 @@ class ETC:
 # # # # GENERAL METHODS # # # #
 # # # # # # # # # # # # # # # #
 
-# function to get the static sky tables & the tel.+inst. transmission curves, they should always be present in the right directory
+
 def snr_in_window(res, lam1, lam2, dlbda=None, unit='pixel', stat='median'):
     """Compute a summary statistic of the SNR inside a spectral window.
 
@@ -3003,7 +3006,9 @@ def snr_in_window(res, lam1, lam2, dlbda=None, unit='pixel', stat='median'):
     dlbda : float or None
         Dispersion in Å/pixel (kept for backward compatibility; not used).
     unit : str
-        ``'pixel'`` — return SNR per spectral pixel (default and only supported option).
+        ``'pixel'`` — return SNR per spectral pixel.
+        ``'bin'`` — return SNR of the rebinned spectral bins using the
+        current observation ``spbin``.
     stat : str
         Summary statistic: ``'median'`` (default) or ``'mean'``.
 
@@ -3013,21 +3018,47 @@ def snr_in_window(res, lam1, lam2, dlbda=None, unit='pixel', stat='median'):
         The requested statistic of the SNR values inside the window,
         or *None* if no data fall within [lam1, lam2].
     """
+    if unit not in ['pixel', 'bin']:
+        raise ValueError("unit must be 'pixel' or 'bin'")
+
     try:
-        snr_spec = res['spec']['snr']
-        wave = snr_spec.wave.coord()
-        snr_data = snr_spec.data.data
-    except (KeyError, AttributeError):
+        if unit == 'pixel':
+            snr_spec = res['spec']['snr']
+            wave = np.ma.asarray(snr_spec.wave.coord())
+            snr_data = np.ma.asarray(snr_spec.data).filled(np.nan)
+        else:
+            source_spec = res['spec']['nph_source']
+            noise_spec = res['spec']['noise']['tot']
+            wave = np.ma.asarray(source_spec.wave.coord())
+            source_data = np.ma.asarray(source_spec.data).filled(np.nan).astype(float)
+            noise_data = np.ma.asarray(noise_spec.data).filled(np.nan).astype(float)
+            spbin = int(res.get('obs', {}).get('spbin') or 1)
+            if spbin <= 1:
+                snr_spec = res['spec']['snr']
+                wave = np.ma.asarray(snr_spec.wave.coord())
+                snr_data = np.ma.asarray(snr_spec.data).filled(np.nan)
+            else:
+                n_bins = len(wave) // spbin
+                if n_bins <= 0:
+                    return None
+                n_valid = n_bins * spbin
+                wave = wave[:n_valid].reshape(n_bins, spbin).mean(axis=1)
+                source_summed = source_data[:n_valid].reshape(n_bins, spbin).sum(axis=1)
+                noise_summed = np.sqrt((noise_data[:n_valid].reshape(n_bins, spbin) ** 2).sum(axis=1))
+                snr_data = np.divide(
+                    source_summed,
+                    noise_summed,
+                    out=np.full(n_bins, np.nan, dtype=float),
+                    where=np.isfinite(noise_summed) & (noise_summed > 0),
+                )
+    except (KeyError, AttributeError, TypeError):
         return None
 
-    mask = (wave >= lam1) & (wave <= lam2)
+    mask = (wave >= lam1) & (wave <= lam2) & np.isfinite(snr_data)
     if not np.any(mask):
         return None
 
-    vals = snr_data[mask].astype(float)
-
-    if unit != 'pixel':
-        raise ValueError("Only unit='pixel' is supported")
+    vals = np.asarray(snr_data[mask], dtype=float)
 
     if stat == 'median':
         return float(np.nanmedian(vals))
