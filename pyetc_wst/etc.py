@@ -2118,7 +2118,8 @@ class ETC:
                     raise ValueError("For resolved sources, image must not be None.")
                 psf_ima = convolve_and_center(ima, psf_ima)
             
-            ffiber = self.mos_fiber_aperture(ins, psf_ima, displacement=obs.get("disp", 0))
+            displacement = 0.0 if obs['disp'] is None else obs['disp']
+            ffiber = self.mos_fiber_aperture(ins, psf_ima, displacement=displacement)
             source_ph_aperture = factor_source * ffiber
         
         tot_noise = np.sqrt(source_ph_aperture + sky_ph_aperture + dark + ron)
