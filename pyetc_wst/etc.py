@@ -372,7 +372,48 @@ class ETC:
         return conf, obs, spec, ima, spec_input
 
     @staticmethod
-    def get_data(obj, chan, name, skydir, transdir):
+    def read_sky_files(skydir):
+        """
+        Read all static sky files right away
+        
+        Parameters
+        ----------        
+        skydir : str
+            directory path where the sky fits file can be found
+        """
+        # Retrieve list of .FITS files from provided sky dir
+        flist = sorted(glob.glob(os.path.join(skydir, "*.fits")))
+        if not flist:
+            raise FileNotFoundError(f"No sky fits files found in {skydir}")
+
+        # Load data
+        sky_data = list()
+        for fname in flist:
+            f   = os.path.basename(fname).split('_')
+            tab = Table.read(fname, unit_parse_strict="silent")
+
+            start = 10. * tab['lam'][0]
+            dlam = np.ediff1d(tab['lam'])
+
+            # Raise a warning in the unlikely case input table has a
+            # wavelength array with non-constant wavelength steps
+            if not np.allclose(dlam, dlam.mean(), rtol=1e-6, atol=0):
+                logging.getLogger(__name__).warning(
+                    "%s: wavelength step is not constant (min %.6g, max %.6g nm)",
+                    os.path.basename(fname), dlam.min(), dlam.max())
+
+            step  = 10. * (tab['lam'][1] - tab['lam'][0])
+            wave  = WaveCoord(cdelt=step, crval=start, cunit=u.angstrom)
+
+            sky_data.append(dict(moon=f[0],
+                                 airmass=float(f[1]),
+                                 pwv=float(f[2][:-5]),
+                                 emi=Spectrum(data=tab['flux'],  wave=wave),
+                                 abs=Spectrum(data=tab['trans'], wave=wave)))
+        return sky_data            
+
+    @staticmethod
+    def get_data(obj, chan, name, skydir, transdir, sky_data=None):
         """ retrieve instrument data from the associated setup files
 
         Parameters
@@ -387,40 +428,40 @@ class ETC:
             directory path where the sky fits file can be found
         transdir : str
             directory path where the transmission fits file can be found
+        sky_data : list of dict, optional
+            sky spectra already read with read_sky_files; if None, they are read from skydir
 
         """
         ins = obj[chan]
 
-        # Sky emission and atmospheric transmission
-        flist = glob.glob(os.path.join(skydir,"*.fits"))
-        flist.sort()
-        ins['sky'] =[]
-        moons = []
-        for fname in flist:
-            f = os.path.basename(fname).split('_')
-            moon = f[0]
-            moons.append(moon)
-            airmass = float(f[1])
-            pwv = float(f[2][:-5])
-            d = dict(moon=moon, airmass=airmass, pwv=pwv)
+        # Sky emission and atmospheric transmission, resampled to the channel grid
+        if sky_data is None:
+            sky_data = ETC.read_sky_files(skydir)
+        elif len(sky_data) == 0:
+            raise ValueError("sky_data is empty")            
 
-            tab = Table.read(fname, unit_parse_strict="silent")
+        # Number of elements along the spectral dimension:
+        nwave = int((ins['lbda2']-ins['lbda1']) / ins['dlbda']) + 1
 
-            start = tab['lam'][0]*10
-            step = (tab['lam'][1]-tab['lam'][0])*10
-            wave = WaveCoord(cdelt=step, crval=start, cunit=u.angstrom)
+        ins['sky'], moons = list(), list()
+        for sky in sky_data:
+            moons.append(sky['moon'])
+            d = dict(moon=sky['moon'], airmass=sky['airmass'], pwv=sky['pwv'])
 
-            d_emi = Spectrum(data=tab['flux'], wave=wave)
-            d_abs = Spectrum(data=tab['trans'], wave=wave)
-
-            d['emi'] = d_emi.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
-            d['abs'] = d_abs.resample(ins['dlbda'], start=ins['lbda1'], shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda'])+1)
+            # As long as `inplace' option of Spectrum.resample is kept as False (default),
+            # the method will return a new Spectrum object, so sky_data is not directly modified
+            d.update({'emi': sky['emi'].resample(ins['dlbda'], start=ins['lbda1'], shape=nwave),
+                      'abs': sky['abs'].resample(ins['dlbda'], start=ins['lbda1'], shape=nwave)})
+            
             ins['sky'].append(d)
-        
+
         # all the transmission curves
-        filename = glob.glob(os.path.join(transdir,f'{name}_{chan}_noatm.fits'))[0]
-        trans=Table.read(os.path.join(transdir,filename), unit_parse_strict="silent")
+        filename = os.path.join(transdir, f'{name}_{chan}_noatm.fits')
+        if not os.path.isfile(filename):
+            raise FileNotFoundError(f"Transmission file not found: {filename}")
         
+        trans = Table.read(filename, unit_parse_strict="silent")
+
         # # # Not needed anymore from Olga's throughput files
         # We compute the total transmision (excluded atmosphere)
         #cc = trans.colnames[1:-1] 
@@ -430,18 +471,22 @@ class ETC:
         # We compute the instrument only transmission (exluded CCD and telescope, all the other columns)
         trans['only_inst'] = trans['total'] / (trans['detector_QE'] * trans['telescope'])
 
-        ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['total']),  wave=ins['sky'][0]['emi'].wave)
-        ins['telescope'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['telescope']),  wave=ins['sky'][0]['emi'].wave)
-        ins['QE'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['detector_QE']),  wave=ins['sky'][0]['emi'].wave)
-        ins['total_instrumental'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(), trans['wave']*10, trans['only_inst']),  wave=ins['sky'][0]['emi'].wave)
+        wave = ins['sky'][0]['emi'].wave
+        lam = wave.coord()
+
+        ins['instrans']  = Spectrum(data=np.interp(lam, 10.* trans['wave'], trans['total']), wave=wave)
+        ins['telescope'] = Spectrum(data=np.interp(lam, 10.* trans['wave'], trans['telescope']), wave=wave)
+        ins['QE']        = Spectrum(data=np.interp(lam, 10.* trans['wave'], trans['detector_QE']), wave=wave)
+        ins['total_instrumental'] = Spectrum(data=np.interp(lam, 10.* trans['wave'], trans['only_inst']), wave=wave)
 
         ins['skys'] = list(set(moons))
         ins['wave'] = ins['instrans'].wave
         ins['chan'] = chan
         ins['name'] = name
         ins['advice'] = 'Beware if you change the static sky files and/or transmission curves, even by a little marging, it is good to have in the files: lambda1_sky < lambda1_trans < lambda1_config, same for dlambda and opposite for lambda2 (they are all trimmed and resampled according to the configuration dictionary, this is done in order to avoid edges problems)'
-        return
-        
+
+        return None
+
     def get_sky(self, obs=None):
         """
         Return sky emission and transmission spectra.
